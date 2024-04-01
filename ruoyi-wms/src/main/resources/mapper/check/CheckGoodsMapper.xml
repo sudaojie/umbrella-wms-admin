@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.CheckGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckGoods" id="CheckGoodsResult">
+        <result property="id" column="id"/>
+        <result property="checkDetail" column="check_detail"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="trayName" column="tray_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="lossNum" column="loss_num"/>
+        <result property="profitNum" column="profit_num"/>
+        <result property="printStatus" column="print_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        select
+            id,
+            check_detail,
+            goods_code,
+            goods_name,
+            parts_code,
+            only_code,
+            tray_code,
+            tray_name,
+            location_code,
+            model,
+            measure_unit,
+            loss_num,
+            profit_num,
+            print_status,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            check_bill_code
+        from
+            wms_warehouse_check_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectCheckGoodsList" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        select a.id checkDetail,b.goods_code goodsCode,b.goods_name goodsName,b.parts_code partsCode,b.only_code onlyCode,
+        b.tray_code trayCode,b.location_code locationCode,b.model model,b.measure_unit measureUnit
+        from wms_warehouse_check_detail a
+        inner join wms_warehouse_tblstock b on a.tray_code = b.tray_code
+        where a.tray_code is not null
+        and a.check_bill_code = #{checkBillCode}
+        and a.del_flag = '0'
+        and b.del_flag = '0'
+    </select>
+
+    <select id="selectByGoodsCode" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        SELECT
+            t.goods_code,
+            t.goods_name,
+            t.parts_code,
+            t.only_code,
+            t.tray_code,
+            t.location_code,
+            t.model,
+            t.measure_unit
+        FROM
+            wms_warehouse_tblstock t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getCheckGoodsList" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        SELECT
+            `id`,
+            `check_bill_code`,
+            `goods_code`,
+            `goods_name`,
+            `parts_code`,
+            `only_code`,
+            `tray_code`,
+            `location_code`,
+            `model`,
+            `measure_unit`,
+            `loss_num`,
+            `profit_num`
+        FROM
+            wms_warehouse_check_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectGoodsByCode" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        SELECT
+        *
+        FROM
+        wms_warehouse_check_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="updateGoodsByCode">
+        UPDATE `wms_warehouse_check_goods`
+        SET del_flag = 1
+        WHERE
+            check_bill_code = #{checkBillCode}
+    </update>
+</mapper>

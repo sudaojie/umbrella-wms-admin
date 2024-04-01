@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsOperateTaskMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsOperateTask" id="WcsOperateTaskResult">
+        <result property="id" column="id"/>
+        <result property="taskNo" column="task_no"/>
+        <result property="taskDeviceType" column="task_device_type"/>
+        <result property="taskType" column="task_type"/>
+        <result property="startPosition" column="start_position"/>
+        <result property="endPosition" column="end_position"/>
+        <result property="trayNo" column="tray_no"/>
+        <result property="operateBeginTime" column="operate_begin_time"/>
+        <result property="operateEndTime" column="operate_end_time"/>
+        <result property="taskReqJson" column="task_req_json"/>
+        <result property="taskRspJson" column="task_rsp_json"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="errMsg" column="err_msg"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="inBillNo" column="in_bill_no"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.WcsOperateTask">
+        select
+            id,
+            task_no,
+            start_area_code,
+            end_area_code,
+            task_type,
+            task_device_type,
+            start_position,
+            end_position,
+            tray_no,
+            operate_begin_time,
+            operate_end_time,
+            task_req_json,
+            task_rsp_json,
+            wait_task_req_json,
+            task_status,
+            err_msg,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            in_bill_no,
+            operate_type
+        from
+            wcs_operate_task
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

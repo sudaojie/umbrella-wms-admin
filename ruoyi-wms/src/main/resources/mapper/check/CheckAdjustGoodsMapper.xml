@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.CheckAdjustGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckAdjustGoods" id="CheckAdjustGoodsResult">
+        <result property="id" column="id"/>
+        <result property="checkAdjustDetail" column="check_adjust_detail"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="trayName" column="tray_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="lossNum" column="loss_num"/>
+        <result property="profitNum" column="profit_num"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.CheckAdjustGoods">
+        select
+            id,
+            check_adjust_detail,
+            goods_code,
+            goods_name,
+            parts_code,
+            only_code,
+            tray_code,
+            tray_name,
+            location_code,
+            model,
+            measure_unit,
+            loss_num,
+            profit_num,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_warehouse_check_adjust_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectProfitData" resultType="com.ruoyi.wms.check.domain.CheckAdjustGoods">
+        select sp.parts_code partsCode,sp.only_code onlyCode,sp.tray_code trayCode,sp.goods_code goodsCode,sp.goods_name goodsName,sp.model model,sp.measure_unit measureUnit
+        from (select parts_code,only_code,tray_code,goods_code,goods_name,model,measure_unit
+            from wms_warehouse_check_realitygoods where check_bill_code = #{checkBillCode} and del_flag = '0') sp
+        left join (select a.parts_code,a.tray_code
+            from wms_warehouse_check_goods a
+            where EXISTS
+                (select * from wms_warehouse_check_detail b where b.check_bill_code = #{checkBillCode} and b.id = a.check_detail and b.check_status = '2' and b.del_flag = '0')
+            and a.del_flag = '0') zm
+            on sp.parts_code = zm.parts_code and sp.tray_code = zm.tray_code
+        where zm.parts_code is null
+    </select>
+
+    <select id="selectLossData" resultType="com.ruoyi.wms.check.domain.CheckAdjustGoods">
+        select zm.parts_code partsCode,zm.only_code onlyCode,zm.tray_code trayCode,zm.goods_code goodsCode,zm.goods_name goodsName,zm.model model,zm.measure_unit measureUnit
+        from (select parts_code,tray_code from wms_warehouse_check_realitygoods where check_bill_code = #{checkBillCode} and del_flag = '0') sp
+        right join (select a.parts_code,a.tray_code,a.only_code,a.goods_code ,a.goods_name ,a.model ,a.measure_unit
+            from wms_warehouse_check_goods a
+            where EXISTS
+                (select * from wms_warehouse_check_detail b where b.check_bill_code = #{checkBillCode} and b.id = a.check_detail and b.check_status = '2' and b.del_flag = '0')
+            and a.del_flag = '0') zm
+            on sp.parts_code = zm.parts_code and sp.tray_code = zm.tray_code
+        where sp.parts_code is null
+    </select>
+
+
+</mapper>

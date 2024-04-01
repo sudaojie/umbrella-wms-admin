@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.WmsAccountMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.WmsAccount" id="WmsWarehouseAccountResult">
+        <result property="id" column="id"/>
+        <result property="accountCode" column="account_code"/>
+        <result property="codeType" column="code_type"/>
+        <result property="charg" column="charg"/>
+        <result property="warehouseCode" column="warehouse_code"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="changeNum" column="change_num"/>
+        <result property="stockNum" column="stock_num"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.WmsAccount">
+        select
+            id,
+            account_code,
+            code_type,
+            charg,
+            warehouse_code,
+            warehouse_name,
+            change_num,
+            stock_num,
+            goods_code,
+            goods_name,
+            model,
+            measure_unit,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        from
+            wms_warehouse_account
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

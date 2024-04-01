@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.TblstockMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.Tblstock" id="TblstockResult">
+        <result property="id" column="id"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="charg" column="charg"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="warehouseCode" column="warehouse_code"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="listingTime" column="listing_time"/>
+        <result property="produceTime" column="produce_time"/>
+        <result property="periodValidity" column="period_validity"/>
+        <result property="warranty" column="warranty"/>
+        <result property="lockStatus" column="lock_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.Tblstock">
+        select
+        id,
+        only_code,
+        parts_code,
+        goods_code,
+        goods_name,
+        model,
+        measure_unit,
+        charg,
+        supplier_code,
+        supplier_name,
+        warehouse_code,
+        warehouse_name,
+        area_code,
+        area_name,
+        location_code,
+        location_name,
+        tray_code,
+        listing_time,
+        produce_time,
+        period_validity,
+        warranty,
+        lock_status,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_warehouse_tblstock
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectTblstockList" resultType="com.ruoyi.wms.stock.domain.Tblstock">
+        SELECT
+            w.charg,
+            w.goods_code,
+            w.goods_name,
+            w.model,
+            w.location_code,
+            w.location_name,
+            w.measure_unit,
+            w.tray_code,
+            count(w.id) goodsNum
+        FROM wms_warehouse_tblstock w
+        <where>
+            ${ew.sqlSegment}
+        </where>
+
+    </select>
+
+    <select id="showTblstockDetail" resultType="com.ruoyi.wms.stock.domain.Tblstock">
+        SELECT
+            w.only_code,
+            w.parts_code,
+            w.charg,
+            w.goods_code,
+            w.goods_name,
+            w.model,
+            w.measure_unit
+        FROM wms_warehouse_tblstock w
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="updateTblstockLockstatus">
+        UPDATE
+        wms_warehouse_tblstock
+        SET lock_status = 0
+        WHERE
+        del_flag=0 and
+        parts_code in
+        <foreach collection="goodsCodes" item="goods" open="(" separator="," close=")">
+            #{goods}
+        </foreach>
+    </update>
+
+    <select id="selectPartsCodeByTrayCode" resultType="java.lang.String">
+        select parts_code from wms_warehouse_tblstock
+        where del_flag = '0' and tray_code = #{trayCode}
+        order by SUBSTR(only_code,5,LENGTH(only_code))
+    </select>
+
+    <select id="getOpeningInventoryOfThisMonth" resultType="java.lang.String">
+        select ifnull(count(*), 0) as num from wms_warehouse_tblstock where date(create_time) &lt;
+        (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 0 month) as date)
+        and del_flag = 0
+    </select>
+
+    <select id="getEndingInventoryOfThisMonth" resultType="java.lang.String">
+        select ifnull(count(*), 0) as num from wms_warehouse_tblstock where date(create_time) &lt;
+        (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval -1 month) as date
+        ) and del_flag = 0
+    </select>
+
+    <select id="getOpeningInventoryOfLastMonth" resultType="java.lang.String">
+         select ifnull(count(*), 0) as num from wms_warehouse_tblstock where date(create_time) &lt;
+         (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now())-1 day),interval 1 month) as date
+         ) and del_flag = 0
+    </select>
+
+    <select id="getEndingInventoryOfLastMonth" resultType="java.lang.String">
+        select ifnull(count(*), 0) as num from wms_warehouse_tblstock where date(create_time) &lt;
+        (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 0 month) as date
+        ) and del_flag = 0
+    </select>
+
+    <select id="getOutGoodsNumOfThisMonth" resultType="java.lang.String">
+        select ifnull(sum(a.out_bill_num),0.000) as num
+            from wms_outbill_goods a
+            left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+            where a.del_flag = '0'
+            and b.del_flag = '0'
+            and date_format(b.out_bill_time, '%Y-%m') = date_format(CURDATE(), '%Y-%m')
+    </select>
+
+    <select id="getOutGoodsNumOfLastMonth" resultType="java.lang.String">
+        select ifnull(sum(a.out_bill_num),0.000) as num
+            from wms_outbill_goods a
+            left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+            where a.del_flag = '0'
+            and b.del_flag = '0'
+            and date_format(b.out_bill_time, '%Y-%m') = date_format(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m')
+    </select>
+
+</mapper>

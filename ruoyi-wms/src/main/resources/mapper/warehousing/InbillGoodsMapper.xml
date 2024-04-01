@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.warehousing.mapper.InbillGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.warehousing.domain.InbillGoods" id="InbillGoodsResult">
+        <result property="id" column="id"/>
+        <result property="inBillCode" column="in_bill_code"/>
+        <result property="inbillDetailId" column="inbill_detail_id"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="goodCode" column="good_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="printStatus" column="print_status"/>
+        <result property="inBillNum" column="in_bill_num"/>
+        <result property="produceTime" column="produce_time"/>
+        <result property="periodValidity" column="period_validity"/>
+        <result property="outStatus" column="out_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="measureUnit" column="measure_unit"/>
+    </resultMap>
+
+    <delete id="deleteByInBillCode">
+        update wms_inbill_goods set del_flag = '1', update_by = #{username}, update_time = now()
+        <where>
+            and in_bill_code = #{inBillCode}
+        </where>
+    </delete>
+
+    <select id="select" resultType="com.ruoyi.wms.warehousing.domain.InbillGoods">
+        select
+        id,print_status,
+        (select goods_code from wms_inbill_detail where id = inbill_detail_id) goods_code,
+        (select goods_name from wms_inbill_detail where id = inbill_detail_id) goods_name,
+        (select measure_unit from wms_inbill_detail where id = inbill_detail_id) measure_unit,
+        in_bill_code,
+        inbill_detail_id,
+        location_code,
+        only_code,
+        parts_code,
+        tray_code,
+        in_bill_num,
+        produce_time,
+        out_status,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_inbill_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+    <select id="selectInBillNotTrayCount" resultType="int">
+        SELECT count(1) FROM wms_inbill_goods where del_flag = '0' and in_bill_code = #{inBillCode} and tray_code is null
+    </select>
+
+    <select id="selectByOnlyCodes" resultType="com.ruoyi.wms.warehousing.domain.InbillGoods">
+        select
+            id,print_status,
+            (select goods_code from wms_inbill_detail where id = inbill_detail_id) goods_code,
+            in_bill_code,
+            inbill_detail_id,
+            only_code,
+            parts_code,
+            tray_code,
+            in_bill_num,
+            produce_time,
+            out_status,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_inbill_goods
+        <where>
+            only_code in
+            <foreach collection="onlyCodes" item="onlyCode" index="index" open="(" close=")" separator=",">
+                #{onlyCode}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="selectUnGroupDiskGoodsList" resultType="com.ruoyi.wms.group.disk.data.domain.vo.WmsUnGroupGoodsInfoVO">
+        select
+            wig.in_bill_code as inbillcode,
+            ifnull(wig.parts_code, '暂无') as partscode,
+            wig.create_time as createtime,
+            wid.goods_name as goodstype
+        from
+        wms_inbill_goods wig
+        left join wms_inbill_detail wid on wig.inbill_detail_id = wid.id
+        where  wig.tray_code is null
+        and wig.del_flag = 0
+        order by wig.create_time desc,wid.goods_name asc
+    </select>
+
+    <select id="getGoodsInfo" resultType="com.ruoyi.wms.check.domain.CheckRealitygoods">
+        select parts_code,b.goods_code,b.goods_name,b.measure_unit,b.model from wms_inbill_goods a
+        left join wms_inbill_detail b on a.inbill_detail_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id ="selectListInbillGoods" resultType="com.ruoyi.wms.warehousing.domain.InbillGoods">
+        select
+        a.id,
+        a.print_status,
+        b.goods_code,
+        b.goods_name ,
+        b.measure_unit,
+        a.location_code,
+        a.in_bill_code,
+        a.inbill_detail_id,
+        a.only_code,
+        a.parts_code,
+        a.tray_code,
+        a.in_bill_num,
+        a.produce_time,
+        a.out_status,
+        a.del_flag,
+        a.create_by,
+        a.create_time,
+        a.update_by,
+        a.update_time,
+        a.remark
+        from
+        wms_inbill_goods a
+        left join wms_inbill_detail b on a.inbill_detail_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectByIdGoods" resultType="com.ruoyi.wms.warehousing.domain.InbillGoods">
+        select a.id, parts_code,b.goods_code,b.goods_name,a.produce_time from wms_inbill_goods a
+        left join wms_inbill_detail b on a.inbill_detail_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+
+
+</mapper>

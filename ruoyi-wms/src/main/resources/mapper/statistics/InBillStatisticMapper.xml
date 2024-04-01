@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.statistics.mapper.InBillStatisticMapper">
+
+    <resultMap type="com.ruoyi.wms.statistics.domain.InBillStatistic" id="InBillResult">
+        <result property="id" column="id"/>
+        <result property="inBillCode" column="in_bill_code"/>
+        <result property="charg" column="charg"/>
+        <result property="inBillStatus" column="in_bill_status"/>
+        <result property="inBillCategory" column="in_bill_category"/>
+        <result property="weight" column="weight"/>
+        <result property="volume" column="volume"/>
+        <result property="docNo" column="doc_no"/>
+        <result property="inBillSerial" column="in_bill_serial"/>
+        <result property="storageSerial" column="storage_serial"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.statistics.domain.InBillStatistic">
+        select
+            id,
+            in_bill_code,
+            charg,
+            in_bill_status,
+            in_bill_category,
+            weight,
+            volume,
+            doc_no,
+            in_bill_serial,
+            storage_serial,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_in_bill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectInBillList" resultType="com.ruoyi.wms.statistics.domain.InBillStatistic">
+        SELECT
+            w.in_bill_code,
+            w.charg,
+            d.supplier_code,
+            d.supplier_name,
+            w.in_bill_category,
+            d.goods_code,
+            d.goods_name,
+            d.measure_unit,
+            d.model,
+            d.in_bill_num,
+            d.weight,
+            d.volume,
+            w.in_bill_status,
+            w.create_time
+        FROM
+            wms_in_bill w
+            LEFT JOIN wms_inbill_detail d ON w.in_bill_code = d.in_bill_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        ORDER BY
+            w.create_time DESC
+    </select>
+</mapper>

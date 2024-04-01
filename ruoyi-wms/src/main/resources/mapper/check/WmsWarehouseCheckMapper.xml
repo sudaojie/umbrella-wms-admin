@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.WmsWarehouseCheckMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.Check" id="WmsWarehouseCheckResult">
+        <result property="id" column="id"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+        <result property="checkStatus" column="check_status"/>
+        <result property="checkType" column="check_type"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="checkBy" column="check_by"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.Check">
+        SELECT
+            id,
+            check_bill_code,
+            check_status,
+            check_method,
+            check_type,
+            start_time,
+            end_time,
+            check_by,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM
+            wms_warehouse_check
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getAllCheckbill" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            g.goods_code,
+            g.goods_name,
+            wl.location_code,
+            wl.area_id areaCode ,
+            a.area_name
+        FROM
+            wms_warehouse_location wl
+            LEFT JOIN wms_warehouse_area a ON wl.area_id = a.area_code
+            LEFT JOIN wms_warehouse_tray t ON wl.tray_code = t.tray_code
+            LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getLocationList" resultType="com.ruoyi.wms.check.dto.CheckDetailVo">
+        SELECT
+            wl.location_code,
+            wl.location_name,
+            g.goods_code,
+            g.goods_name,
+            wl.area_id areaCode,
+            a.area_name
+        FROM
+            wms_warehouse_location wl
+            LEFT JOIN wms_warehouse_area a ON wl.area_id = a.area_code
+            LEFT JOIN wms_warehouse_tray t ON wl.tray_code = t.tray_code
+            LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getGoodsList" resultType="com.ruoyi.wms.check.domain.CheckGoods">
+        SELECT
+            t.goods_code,
+            t.goods_name,
+            t.only_code
+        FROM
+            wms_warehouse_tblstock t
+            LEFT JOIN wms_warehouse_area a ON t.area_code = a.area_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectCheckByCheckBillCode" resultType="com.ruoyi.wms.check.domain.Check">
+        SELECT
+            id,
+            check_bill_code,
+            check_method,
+            check_type,
+            check_status,
+            check_by,
+            create_by,
+            create_time
+        FROM
+            wms_warehouse_check
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

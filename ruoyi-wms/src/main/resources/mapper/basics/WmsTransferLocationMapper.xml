@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.WmsTransferLocationMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.WmsTransferLocation" id="WmsTransferLocationResult">
+        <result property="id" column="id"/>
+        <result property="tranferLocationCode" column="tranfer_location_code"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="tranferLocationArrow" column="tranfer_location_arrow"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.WmsTransferLocation">
+        select
+            id,
+            tranfer_location_code,
+            area_code,
+            tranfer_location_arrow,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_transfer_location
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

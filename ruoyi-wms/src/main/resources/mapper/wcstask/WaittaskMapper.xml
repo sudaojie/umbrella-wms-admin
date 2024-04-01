@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.wcstask.mapper.WaittaskMapper">
+
+    <resultMap type="com.ruoyi.wms.wcstask.domain.Waittask" id="WaittaskResult">
+        <result property="id" column="id"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="taskData" column="task_data"/>
+        <result property="taskOrder" column="task_order"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.wcstask.domain.Waittask">
+        select
+            id,
+            task_status,
+            task_data,
+            task_order,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_wcs_waittask
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

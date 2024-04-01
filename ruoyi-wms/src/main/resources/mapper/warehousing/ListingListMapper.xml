@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.warehousing.mapper.ListingListMapper">
+
+    <resultMap type="com.ruoyi.wms.warehousing.domain.ListingList" id="ListingListResult">
+        <result property="id" column="id"/>
+        <result property="listingCode" column="listing_code"/>
+        <result property="inBillCode" column="in_bill_code"/>
+        <result property="charg" column="charg"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.warehousing.domain.ListingList">
+        select
+        id,
+        listing_code,
+        in_bill_code,
+        charg,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_listing_list
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+</mapper>

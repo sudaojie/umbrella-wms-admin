@@ -1,0 +1,53 @@
+主节点MySQL(Centos)
+1. 修改MySQL配置文件
+    修改指令：vim /etc/my.cnf
+
+    #修改server_id,整体集群中保持唯一（命名规则最好是ip最后一位，如192.168.0.220 server_id就为220）
+    server_id=1
+
+    #添加以下内容
+    log-bin=mysql-bin
+
+    #重启mariadb服务
+    systemctl restart mariadb
+
+    #验证是否配置成功
+    show variables like '%server_id%'
+
+    #查看主节点binlog文件和行数
+    show master status;
+
+
+从节点MySQL(Windows)
+
+    修改指令：vim /etc/my.cnf
+
+    #修改server_id,整体集群中保持唯一（命名规则最好是ip最后一位，如192.168.0.220 server_id就为220）
+    server_id=1
+
+    #添加以下内容
+    log-bin=mysql-bin
+
+    #添加 需要同步的数据库(从节点特有)
+    binlog_do_db=umbrella_wms_test
+
+
+    #重启mariadb服务
+    systemctl restart mariadb
+
+
+    #验证是否配置成功
+    show variables like '%server_id%'
+
+
+    #从服务器同步主服务器配置（在从节点执行以下sql）
+    change master to master_host='192.168.0.220',master_user='root',master_password='root',
+    master_log_file='主节点binlog文件',master_log_pos=主节点行数
+
+    #开启同步
+    start slave
+
+
+    #查看从节点状态
+    show slave status;
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsDeviceEarlyWarningInfoMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsDeviceEarlyWarningInfo" id="WcsDeviceEarlyWarningInfoResult">
+        <result property="id" column="id"/>
+        <result property="deviceInfoId" column="device_info_id"/>
+        <result property="warningContent" column="warning_content"/>
+        <result property="warningTime" column="warning_time"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.dto.WcsDeviceEarlyWarningFormDto">
+        select d.id, d.device_info_id, t.device_name, t.device_type, d.warning_content, d.warning_time from wcs_device_early_warning_info d left join wcs_device_base_info t
+        on d.device_info_id = t.device_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getInfoById" resultType="com.ruoyi.wcs.domain.dto.WcsDeviceEarlyWarningFormDto">
+        select d.id, d.device_info_id, t.device_name, t.device_type, d.warning_content, d.warning_time from wcs_device_early_warning_info d left join wcs_device_base_info t
+        on d.device_info_id = t.device_no
+        <where>
+            <if test="id !=null and id != ''">
+                d.id = #{id}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.TrayMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.Tray" id="TrayResult">
+        <result property="id" column="id"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="trayName" column="tray_name"/>
+        <result property="traySimpleName" column="tray_simple_name"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="areaId" column="area_id"/>
+        <result property="locationId" column="location_id"/>
+        <result property="trayLength" column="tray_length"/>
+        <result property="trayWidth" column="tray_width"/>
+        <result property="trayHeight" column="tray_height"/>
+        <result property="trayVolume" column="tray_volume"/>
+        <result property="trayUsableVolume" column="tray_usable_volume"/>
+        <result property="trayLimitWeight" column="tray_limit_weight"/>
+        <result property="trayUsableWeight" column="tray_usable_weight"/>
+        <result property="enableStatus" column="enable_status"/>
+        <result property="emptyStatus" column="empty_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.Tray">
+        select
+        id,
+        tray_code,
+        tray_name,
+        tray_simple_name,
+        warehouse_id,
+        area_id,
+        location_id,
+        TRUNCATE(tray_length,2) tray_length,
+        TRUNCATE(tray_width,2) tray_width,
+        TRUNCATE(tray_height,2) tray_height,
+        TRUNCATE(tray_volume,2) tray_volume,
+        TRUNCATE(tray_usable_volume,2) tray_usable_volume,
+        TRUNCATE(tray_limit_weight,2) tray_limit_weight,
+        TRUNCATE(tray_usable_weight,2) tray_usable_weight,
+        enable_status,
+        empty_status,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark,
+        tray_model_code
+        from
+        wms_warehouse_tray
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by CONVERT(tray_code using ascii) desc
+    </select>
+    <select id="selectDataByCode" resultType="com.ruoyi.wms.basics.domain.Tray">
+        select * from wms_warehouse_tray where del_flag='0' and tray_code=#{trayCode}
+    </select>
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(1) from wms_warehouse_tray where del_flag='0' and tray_code=#{object.trayCode}
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+    </select>
+    <select id="selectDataByLocationCode" resultType="java.lang.Integer">
+        select count(1) from wms_warehouse_tray where del_flag='0' and location_id=#{locationCode}
+    </select>
+    <select id="countCapacityByLocation" resultType="java.math.BigDecimal">
+        select SUM(tray_volume) from wms_warehouse_tray where del_flag='0' and location_id=#{locationCode}
+    </select>
+    <select id="countWeightByLocation" resultType="java.math.BigDecimal">
+        select SUM(tray_limit_weight) from wms_warehouse_tray where del_flag='0' and location_id=#{locationCode}
+    </select>
+    <select id="countCapacityByArea" resultType="java.math.BigDecimal">
+        select SUM(tray_volume) from wms_warehouse_tray where del_flag='0' and area_id=#{areaCode}
+    </select>
+    <select id="countAvailableCapacityByArea" resultType="java.math.BigDecimal">
+        select SUM(tray_usable_volume) from wms_warehouse_tray where del_flag='0' and area_id=#{areaCode}
+    </select>
+    <select id="countCapacityByHouse" resultType="java.math.BigDecimal">
+        select SUM(tray_volume) from wms_warehouse_tray where del_flag='0' and warehouse_id=#{warehouseCode}
+    </select>
+    <select id="countAvailableCapacityByHouse" resultType="java.math.BigDecimal">
+        select SUM(tray_usable_volume) from wms_warehouse_tray where del_flag='0' and warehouse_id=#{warehouseCode}
+    </select>
+
+    <update id="updateOnLocation">
+        update wms_warehouse_tray set on_location = #{onLocation}, update_by = #{username}, update_time = now()
+        where tray_code in
+        <foreach collection="trayCodeList" item="trayCode" index="index" open="(" close=")" separator=",">
+            #{trayCode}
+        </foreach>
+    </update>
+
+    <select id="getEmptyTray" resultType="com.ruoyi.wms.basics.vo.LocationMapVo">
+        select b.tray_code trayCode,a.location_code locationCode,a.location_type locationType,a.location_arrow locationArrow
+        from wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code = b.tray_code
+        left join wms_warehouse_area c on a.area_id = c.area_code
+        where a.lock_status = '0'
+        and b.empty_status = '0'
+        and b.enable_status = '0'
+        and a.del_flag = '0'
+        and a.enable_status = '0'
+        and b.del_flag = '0'
+        and c.del_flag = '0'
+        and c.area_code = #{areaCode}
+        order by a.column_num,a.layer,a.location_type,a.order_num
+        limit #{limit}
+    </select>
+
+    <select id="getEmptyTrayCountByAreaType" resultType="com.ruoyi.wms.basics.dto.AreaDto">
+        select c.area_code areaCode, count(1) emptyNum
+        from wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code = b.tray_code
+        left join wms_warehouse_area c on a.area_id = c.area_code
+        where c.area_type = #{areaType}
+        and a.lock_status = '0'
+        and b.enable_status = '0'
+        and a.del_flag = '0'
+        and a.enable_status = '0'
+        and b.del_flag = '0'
+        and c.del_flag = '0'
+        and b.empty_status = '0'
+        group by c.area_code
+        having emptyNum > 0
+        order by c.area_code
+    </select>
+
+    <select id="getGoodsTrayCountByAreaType" resultType="com.ruoyi.wms.basics.dto.AreaDto">
+        select c.area_code areaCode,
+        (select count(1) from  wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code = b.tray_code
+        where a.area_id = c.area_code and a.del_flag = '0' and a.enable_status = '0' and b.del_flag = '0'
+        <if test="goodsCode!=null and goodsCode!=''">
+            and b.goods_code = #{goodsCode}
+        </if>
+        <if test="goodsCode==null or goodsCode==''">
+            and b.goods_code is null
+        </if>
+        ) goodsCount
+        from  wms_warehouse_area c
+        where c.area_type = #{areaType}
+        and c.del_flag = '0'
+    </select>
+
+    <select id="getTrayInfoInCode" resultType="com.ruoyi.wms.basics.vo.LocationMapVo">
+        select
+        c.tray_code trayCode,
+        a.location_code locationCode,
+        a.location_type locationType,
+        a.order_num orderNum,
+        b.area_code areaCode,
+        c.goods_code goodsCode
+        from wms_warehouse_location a
+        left join wms_warehouse_area b on a.area_id = b.area_code
+        left join wms_warehouse_tray c on a.tray_code = c.tray_code
+        where c.enable_status = '0'
+        and b.area_code = #{areaCode}
+        and a.del_flag = '0'
+        and b.del_flag = '0'
+        and c.del_flag = '0'
+        and c.tray_code in
+        <foreach collection="trayCodeList" item="trayCode" index="index" open="(" close=")" separator=",">
+            #{trayCode}
+        </foreach>
+    </select>
+
+    <select id="getTrayInfoInTrayCode" resultType="com.ruoyi.wms.basics.vo.LocationMapVo">
+        select b.tray_code trayCode, a.location_code locationCode,a.area_id areaCode,a.location_type locationType,a.order_num orderNum,a.location_arrow locationArrow
+        from wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code = b.tray_code
+        left join wms_warehouse_area c on a.area_id = c.area_code
+        where a.lock_status = '0'
+        and b.enable_status = '0'
+        and a.del_flag = '0'
+        and a.enable_status = '0'
+        and b.del_flag = '0'
+        and c.area_type = #{areaType}
+        and b.tray_code in
+        <foreach collection="trayCodeList" item="trayCode" index="index" open="(" close=")" separator=",">
+            #{trayCode}
+        </foreach>
+    </select>
+
+    <select id="isEmptyTray" resultType="java.lang.Boolean">
+        select if((empty_status)>0,false,true) from wms_warehouse_tray where del_flag='0' and tray_code=#{trayCode}
+    </select>
+    <select id="havEmptyTray" resultType="com.ruoyi.wms.basics.domain.Tray">
+        select * from wms_warehouse_tray where enable_status = '0' and del_flag='0' and empty_status='0'
+        and tray_code in
+        <foreach collection="trayCodes" item="trayCode" index="index" open="(" close=")" separator=",">
+            #{trayCode}
+        </foreach>
+    </select>
+
+    <update id="updateTakedTrayCount">
+        update wms_inbill_detail set taked_tray_count = taked_tray_count + #{num} where id = #{id}
+    </update>
+    <update id="updateTrayByCodes">
+        update wms_warehouse_tray set empty_status=0,goods_code=null where tray_code in
+        (select a.tray_code from (select t.tray_code,(select Count(*) from wms_warehouse_tblstock b where b.tray_code=t.tray_code and b.del_flag=0) num
+        from wms_warehouse_tblstock t where tray_code in
+        <foreach collection="trayCodes" item="trayCode" index="index" open="(" close=")" separator=",">
+            #{trayCode}
+        </foreach>
+        GROUP BY tray_code) a where a.num=0)
+    </update>
+
+    <select id="getEmptyTraylocationCode" resultType="com.ruoyi.wms.basics.vo.LocationMapVo">
+        select b.tray_code trayCode,a.location_code locationCode,a.location_type locationType,a.location_arrow locationArrow
+        from wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code = b.tray_code
+        left join wms_warehouse_area c on a.area_id = c.area_code
+        where  a.location_code = #{locationCode}
+    </select>
+
+</mapper>

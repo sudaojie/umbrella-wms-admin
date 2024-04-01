@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.CheckAdjustDetailMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckAdjustDetail" id="CheckAdjustDetailResult">
+        <result property="id" column="id"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="curtainNum" column="curtain_num"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="lossNum" column="loss_num"/>
+        <result property="profitNum" column="profit_num"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultMap="CheckAdjustDetailResult">
+        select
+            id,
+            check_bill_code,
+            goods_code,
+            goods_name,
+            area_code,
+            area_name,
+            location_code,
+            location_name,
+            tray_code,
+            curtain_num,
+            check_num,
+            loss_num,
+            profit_num,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_warehouse_check_adjust_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.ViewPageMapper">
+
+
+    <select id="selectGoodsByLocCodeList" resultType="com.ruoyi.wms.basics.vo.ViewPageGoodsVo">
+        SELECT
+        wl.location_code locationCode,
+        wl.location_name locationName,
+        wl.enable_status enableStatus,
+        wl.location_type locationType,
+        wl.tray_code trayCode,
+        wl.order_num orderNo,
+        g.goods_code goodsCode,
+        g.goods_name goodsName,
+        g.model model,
+        (select dict_label from sys_dict_data where dict_type='wms_metering_unit' and dict_value = g.measure_unit)
+        measureUnit
+        ,(select count(*) from wms_warehouse_tblstock b where b.del_flag=0 and b.tray_code=wl.tray_code) num
+        FROM
+        wms_warehouse_location wl
+        LEFT JOIN wms_warehouse_tray t ON wl.tray_code = t.tray_code and t.del_flag=0
+        LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code and g.del_flag=0
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectGoodsByLocCodeDetailList" resultType="com.ruoyi.wms.basics.vo.GoodsDetailVo">
+        SELECT
+        wt.only_code,
+        wt.parts_code partCode,
+        wt.produce_time
+        FROM
+        wms_warehouse_location wl
+        LEFT JOIN wms_warehouse_tray t ON wl.tray_code = t.tray_code and t.del_flag=0
+        LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code and g.del_flag=0
+        left join wms_warehouse_tblstock wt on wl.location_code=wt.location_code and t.tray_code=wt.tray_code and
+        g.goods_code=wt.goods_code and wt.del_flag=0
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+    <select id="selectLocationBylayer" resultType="com.ruoyi.wms.basics.vo.ViewPageVo">
+        SELECT
+        wl.layer,
+        wl.column_num,
+        wl.platoon,
+        wl.location_code,
+        wl.tray_code,
+        t.goods_code,
+        wl.area_id,
+        wl.enable_status
+        FROM
+        wms_warehouse_location wl
+        LEFT JOIN wms_warehouse_area wa ON wl.area_id = wa.area_code and wa.del_flag=0
+        LEFT JOIN wms_warehouse_tray t ON wl.tray_code = t.tray_code and t.del_flag=0
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+    <select id="selectAreaCodeByType" resultType="java.lang.String">
+        select area_code from wms_warehouse_area where area_type = #{areaType} and del_flag=0 order by area_code desc
+    </select>
+
+    <select id="getTemplatureHumidyMonitorList" resultType="com.ruoyi.wcs.domain.WcsTemplatureHumidityCollectInfo">
+        SELECT * FROM wcs_templature_humidity_collect_info d WHERE
+        d.device_info_id IN (
+        SELECT
+        t.id
+        FROM
+        wcs_device_base_info t
+        <where>
+            1 = 1
+            <if test="deviceType != null and deviceType != ''">
+                and t.device_type = #{deviceType}
+            </if>
+            <if test="deviceArea != null and deviceArea != ''">
+                AND t.device_area = #{deviceArea}
+            </if>
+            AND t.del_flag = 0 AND t.enable_status = 0
+        </where>
+        )
+        and TO_DAYS(d.collect_time) = TO_DAYS(now())
+    </select>
+
+    <select id="getYesterdayTemplatureHumidyMonitorList"  resultType="com.ruoyi.wcs.domain.WcsTemplatureHumidityCollectInfo">
+        SELECT * FROM wcs_templature_humidity_collect_info d WHERE
+        d.device_info_id IN (
+        SELECT
+        t.id
+        FROM
+        wcs_device_base_info t
+        <where>
+            1 = 1
+            <if test="deviceType != null and deviceType != ''">
+                and t.device_type = #{deviceType}
+            </if>
+            <if test="deviceArea != null and deviceArea != ''">
+                AND t.device_area = #{deviceArea}
+            </if>
+            AND t.del_flag = 0 AND t.enable_status = 0
+        </where>
+        )
+        AND TO_DAYS(d.collect_time) = TO_DAYS(DATE_SUB(now(), INTERVAL 1 DAY));
+    </select>
+
+    <select id="selectTemplatureHumidityStatistics" resultType="com.ruoyi.wcs.domain.WcsTemplatureHumidityCollectInfo">
+        select ifnull(sum(c.templature) / count(1), 0) as templature, ifnull(sum(c.humidity) / count(1), 0) as humidity, date(c.collect_time)
+        as collectTime from (SELECT * FROM wcs_templature_humidity_collect_info d WHERE
+        d.device_info_id IN (
+        SELECT
+        t.id
+        FROM
+        wcs_device_base_info t
+        WHERE
+        t.device_type = #{deviceType}
+        AND t.del_flag = 0
+        AND t.enable_status = 0
+        AND t.device_area =  #{deviceArea})
+        and date_sub(curdate(), INTERVAL 7 DAY) &lt; date(d.collect_time)) c group by date(c.collect_time)
+    </select>
+
+    <select id="selectDryOutHourList" resultType="com.ruoyi.wcs.domain.vo.WcsDryOutHourVo">
+        SELECT
+        ifnull(sum(t. HOUR) / count(1), 0) AS HOUR,
+        date(t.time) AS time
+        FROM
+        (
+        SELECT
+        TIMESTAMPDIFF(
+        HOUR,
+        wdo.dry_outbill_time,
+        wdi.dry_inbill_time
+        ) AS HOUR,
+        wdi.dry_inbill_time AS time
+        FROM
+        wms_dry_inbill wdi
+        LEFT JOIN wms_dry_outbill wdo ON wdi.dry_outbill_code = wdo.dry_outbill_code
+        WHERE
+        wdi.dry_inbill_status = 4
+        AND wdi.del_flag = 0
+        AND wdo.dry_outbill_status = 2
+        AND date_sub(curdate(), INTERVAL 7 DAY) &lt; date(wdi.dry_inbill_time)
+        ) t
+        GROUP BY
+        date(t.time)
+    </select>
+
+    <select id="carbonEmissionWeekMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(a.count) count,a.time from (
+            select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+            wcs_electrical_energy_collect_info t
+            where t.device_info_id in (select o.id from wcs_device_base_info o
+            <where>
+                1 = 1
+                <if test="deviceArea !=null and deviceArea != ''">
+                    and o.device_area = #{deviceArea}
+                </if>
+                and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+            </where>
+            group by TO_DAYS(t.collect_time),t.device_info_id
+            )a GROUP BY time
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 7 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionThisWeekMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL n.num DAY) AS `time`,
+        ifnull( am.count, 0 ) `num`
+        FROM (
+        SELECT 0 AS num UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+        UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+        ) n
+        left join (
+        select sum(a.count) count,a.time from (
+            select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+            wcs_electrical_energy_collect_info t
+            where t.device_info_id in (select o.id from wcs_device_base_info o
+            <where>1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                    and o.device_area = #{deviceArea}
+                </if>
+                and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+            </where>
+            group by TO_DAYS(t.collect_time),t.device_info_id
+            )a GROUP BY time
+        ) am
+        ON DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL n.num DAY)  = am.time
+    </select>
+
+    <select id="carbonEmissionMonthMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add(DATE_ADD(curdate(), INTERVAL - DAY(curdate() - 1) DAY), INTERVAL (cast( help_topic_id AS signed
+        )-1) DAY ) `time`,ifnull( am.count, 0 ) `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(a.count) count,a.time from (
+            select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+            wcs_electrical_energy_collect_info t
+            where t.device_info_id in (select o.id from wcs_device_base_info o
+            <where>
+                <if test="deviceArea !=null and deviceArea != ''">o.device_area = #{deviceArea}
+                </if>
+                and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+            </where>
+            group by TO_DAYS(t.collect_time),t.device_info_id
+            )a GROUP BY time
+        ) am
+        ON date_add(DATE_ADD(curdate(), INTERVAL - DAY(curdate()) + 1 DAY), INTERVAL (cast( help_topic_id AS signed ) -
+        1 ) DAY ) = am.time
+        WHERE help_topic_id &lt;= DAY(LAST_DAY(CURDATE())) AND help_topic_id &gt;= 1 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionDayMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select  ifnull(sum(t.active_total_electrical_energy),0) num, t.collect_time as time from wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and enable_status = 0 and del_flag = 0 and o.device_type = '6' ) and
+            to_days(t.collect_time)=to_days(curdate())
+        </where>
+        order by `time` asc
+    </select>
+
+    <select id="carbonEmissionHalfMonthMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 15 ) DAY ) `time`, ifnull( am.count, 0
+        )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 15 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 15 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionDayMonitorLast" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select ifnull(sum(t.active_total_electrical_energy),0) num, t.collect_time as time from wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and enable_status = 0 and del_flag = 0 and o.device_type = '6' ) and
+            to_days(t.collect_time)=to_days(date_sub(now(),interval 1 year))
+        </where>
+        order by `time` asc limit 0, 10
+    </select>
+
+    <select id="carbonEmissionWeekMonitorLast" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date(date_add( date_sub(now(),interval 1 year), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY )) `time`,
+          ifnull( am.count, 0 ) `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6' )
+            AND t.collect_time >= DATE_SUB(DATE_SUB(NOW(), INTERVAL 1 YEAR), INTERVAL 7 DAY)
+            AND t.collect_time &lt; DATE_SUB(NOW(), INTERVAL 1 YEAR)
+        </where>
+
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date(date_add( date_sub(now(),interval 1 year), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY ))  = am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionMonthMonitorLast" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date(date_add(DATE_ADD(date_sub(now(),interval 1 year), INTERVAL - DAY(date_sub(now(),interval 1 year)) +
+        1 DAY), INTERVAL (cast( help_topic_id AS signed
+        )) DAY )) `time` ,ifnull( am.count, 0 ) `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date(date_add(DATE_ADD(date_sub(now(),interval 1 year), INTERVAL - DAY(date_sub(now(),interval 1 year)) + 1 DAY), INTERVAL (cast( help_topic_id AS signed )) DAY )) = am.time
+        WHERE help_topic_id &lt; day(last_day(date_sub(now(),interval 1 year))) ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionHalfMonthMonitorLast" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date(date_add( date_sub(now(),interval 1 year), INTERVAL ( cast( help_topic_id AS signed ) - 15 ) DAY ))
+        `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+            AND t.collect_time >= DATE_SUB(DATE_SUB(NOW(), INTERVAL 1 YEAR), INTERVAL 15 DAY)
+            AND t.collect_time &lt; DATE_SUB(NOW(), INTERVAL 1 YEAR)
+        </where>
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date(date_add( date_sub(now(),interval 1 year), INTERVAL ( cast( help_topic_id AS signed ) - 15 ) DAY )) = am.time
+        WHERE h.help_topic_id &lt; 15 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionDayMonitorLastMonth" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select ifnull(sum(t.active_total_electrical_energy),0) num, t.collect_time as time from wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and enable_status = 0 and del_flag = 0  and o.device_type = '6') and
+            to_days(t.collect_time)=to_days(DATE_SUB(curdate(), INTERVAL 1 MONTH))
+        </where>
+        order by `time` asc limit 0, 10
+    </select>
+
+    <select id="carbonEmissionWeekMonitorLastMonth" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date(date_add( DATE_SUB(curdate(), INTERVAL 1 MONTH), INTERVAL ( cast( help_topic_id AS signed ) - 7 )
+        DAY )) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date_add( DATE_SUB(curdate(), INTERVAL 1 MONTH), INTERVAL ( cast( h.help_topic_id AS signed ) - 7 ) DAY ) =
+        am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionMonthMonitorLastMonth" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT DATE_ADD(LAST_DAY(DATE_SUB(NOW(), INTERVAL 1 MONTH)) + INTERVAL (help_topic_id) DAY, INTERVAL -1 MONTH) `time`,ifnull( am.count, 0 ) `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(a.count) count,a.time from (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        group by TO_DAYS(t.collect_time),t.device_info_id
+        )a GROUP BY time
+        ) am
+        ON DATE_ADD(LAST_DAY(DATE_SUB(NOW(), INTERVAL 1 MONTH)) + INTERVAL (help_topic_id) DAY, INTERVAL -1 MONTH) = am.time
+        WHERE help_topic_id &lt;= DAY(LAST_DAY(CURDATE())) AND help_topic_id &gt;= 1 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionHalfMonthMonitorLastMonth" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( DATE_SUB(curdate(), INTERVAL 1 MONTH), INTERVAL ( cast( help_topic_id AS signed ) - 15 ) DAY )
+        `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        group by TO_DAYS(t.collect_time)
+        ) am
+        ON date_add( DATE_SUB(curdate(), INTERVAL 1 MONTH), INTERVAL ( cast( h.help_topic_id AS signed ) - 15 ) DAY ) =
+        am.time
+        WHERE h.help_topic_id &lt; 15 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="carbonEmissionDayMonitorLastTotal" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select ifNull(sum(t.active_total_electrical_energy) ,0)as `num`, t.collect_time as time from wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and enable_status = 0 and del_flag = 0 and o.device_type = '6') and
+            to_days(t.collect_time)=to_days(DATE_SUB(CURDATE(), INTERVAL 1 DAY))
+        </where>
+        order by `time` asc
+    </select>
+
+    <select id="carbonEmissionMonitorLastWeek" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select ifNull(sum(t.active_total_electrical_energy) ,0)as `num`, date(t.collect_time) as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+        1 = 1
+        <if test="deviceArea !=null and deviceArea != ''">
+            and o.device_area = #{deviceArea}
+        </if>
+        and enable_status = 0 and del_flag = 0 and o.device_type = '6')
+        </where>
+        and t.collect_time >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) + 7 DAY)
+        AND t.collect_time &lt; DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)
+        group by TO_DAYS(t.collect_time)
+    </select>
+
+    <select id="carbonEmissionMonitorLastMonth" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select ifNull(sum(t.active_total_electrical_energy) ,0)as `num`, t.collect_time as time from wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            1 = 1
+            <if test="deviceArea !=null and deviceArea != ''">
+                and o.device_area = #{deviceArea}
+            </if>
+            and enable_status = 0 and del_flag = 0 and o.device_type = '6') and
+            YEAR(t.collect_time) = YEAR(CURRENT_DATE - INTERVAL 1 MONTH)
+            AND MONTH(t.collect_time) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH)
+        </where>
+        order by `time` asc
+    </select>
+
+    <select id="carbonEmissionYearMonitor" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select w.yue `time` ,ifnull(s.total,0) `num` from (select case when length((@i:=@i+1))=1 then concat('0',@i)
+        else concat('',@i) end yue from sys_dict_data a,(SELECT @i:=0) b where @i&lt;12)w
+        left join (
+        select sum(t.active_total_electrical_energy) as total, date_format(t.collect_time,'%m') as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        and YEAR(t.collect_time) =  YEAR(CURRENT_DATE)
+        group by date_format(t.collect_time,'%m')
+        )s on w.yue=s.time
+    </select>
+
+    <select id="carbonEmissionYearMonitorLastTotal" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        select w.yue `time` ,ifnull(s.total,0) `num` from (select case when length((@i:=@i+1))=1 then concat('0',@i)
+        else concat('',@i) end yue from sys_dict_data a,(SELECT @i:=0) b where @i&lt;12)w
+        left join (
+        select sum(t.active_total_electrical_energy) as total, date_format(t.collect_time,'%m') as time from
+        wcs_electrical_energy_collect_info t
+        where t.device_info_id in (select o.id from wcs_device_base_info o
+        <where>
+            <if test="deviceArea !=null and deviceArea != ''">
+                o.device_area = #{deviceArea}
+            </if>
+            and o.enable_status = 0 and o.del_flag = 0 and o.device_type = '6')
+        </where>
+        and YEAR(t.collect_time) = YEAR(DATE_SUB(NOW(), INTERVAL 1 YEAR))
+        group by date_format(t.collect_time,'%m')
+        )s on w.yue=s.time
+    </select>
+
+    <select id="getInstrumentInformation" resultType="com.ruoyi.wcs.domain.WcsDeviceBaseInfo">
+        select t.id, t.device_no, t.device_type, t.device_name, t.device_address, t.templature, t.humidity, t.smoke_flag
+        from wcs_device_base_info t
+        where t.del_flag = 0 and t.enable_status = 0
+        <if test="list != null and list.size > 0">
+            and t.device_type in
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getInbillStatisticsWeek" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.in_bill_num),0.000) as count, date(b.update_time) as time
+        from wms_inbill_detail a
+        left join wms_in_bill b on a.in_bill_code = b.in_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        and b.in_bill_status = '4'
+        group by to_days(b.update_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 7 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getInbillStatisticsFiveDays" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 5 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.in_bill_num),0.000) as count, date(b.update_time) as time
+        from wms_inbill_detail a
+        left join wms_in_bill b on a.in_bill_code = b.in_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        and b.in_bill_status = '4'
+        group by to_days(b.update_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 5 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 5 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getInbillStatisticsThreeDays" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 3 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.in_bill_num),0.000) as count, date(b.update_time) as time
+        from wms_inbill_detail a
+        left join wms_in_bill b on a.in_bill_code = b.in_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        and b.in_bill_status = '4'
+        group by to_days(b.update_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 3 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 3 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getInbillStatisticsOneDay" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 1 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.in_bill_num),0.000) as count, date(b.update_time) as time
+        from wms_inbill_detail a
+        left join wms_in_bill b on a.in_bill_code = b.in_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        and b.in_bill_status = '4'
+        group by to_days(b.update_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 1 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 1 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getOutBillStatisticsWeek" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.out_bill_num),0.000) as count, date(b.out_bill_time) as time
+        from wms_outbill_goods a
+        left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        group by to_days(b.out_bill_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 7 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getOutBillStatisticsFiveDays" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 5 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.out_bill_num),0.000) as count, date(b.out_bill_time) as time
+        from wms_outbill_goods a
+        left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        group by to_days(b.out_bill_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 5 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 5 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getOutBillStatisticsThreeDays" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 3 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.out_bill_num),0.000) as count, date(b.out_bill_time) as time
+        from wms_outbill_goods a
+        left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        group by to_days(b.out_bill_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 3 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 3 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getOutBillStatisticsOneDay" resultType="com.ruoyi.wcs.domain.vo.WcsStatisticsVo">
+        SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 1 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select ifnull(sum(a.out_bill_num),0.000) as count, date(b.out_bill_time) as time
+        from wms_outbill_goods a
+        left join wms_out_bill b on a.out_bill_code = b.out_bill_code
+        where a.del_flag = '0'
+        and b.del_flag = '0'
+        group by to_days(b.out_bill_time)
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 1 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 1 ORDER BY h.help_topic_id
+    </select>
+
+    <select id="getEnergyConsumptionRankingDay" resultType="com.ruoyi.wcs.domain.vo.WcsEnergyChartsVo">
+        select sum(t.`value`) as `value`,t.`name` from (
+            select sum(t.active_total_electrical_energy) as `value` ,b.device_name `name` from wcs_electrical_energy_collect_info t
+            left join wcs_device_base_info b on t.device_info_id = b.id
+            where t.device_info_id in ( select d.id  from wcs_device_base_info  d
+            where d.device_type = '6' and d.enable_status = 0 and d.del_flag = 0)
+            and  t.collect_time >= CURDATE() - INTERVAL 7 DAY group by device_info_id  , DATE(t.collect_time)
+        )t
+        GROUP BY t.`name`
+        order by `value` desc
+    </select>
+
+    <select id="getEnergyConsumptionRankingFifteenDay" resultType="com.ruoyi.wcs.domain.vo.WcsEnergyChartsVo">
+        select sum(t.`value`) as `value`,t.`name` from (
+            select sum(t.active_total_electrical_energy) as `value` ,b.device_name `name` from wcs_electrical_energy_collect_info t
+            left join wcs_device_base_info b on t.device_info_id = b.id
+            where t.device_info_id in ( select d.id  from wcs_device_base_info  d
+            where d.device_type = '6' and d.enable_status = 0 and d.del_flag = 0)
+            and  t.collect_time >= CURDATE() - INTERVAL 15 DAY group by device_info_id , DATE(t.collect_time)
+        )t
+        GROUP BY t.`name`
+        order by `value` desc
+    </select>
+
+    <select id="getEnergyConsumptionRankingMonth" resultType="com.ruoyi.wcs.domain.vo.WcsEnergyChartsVo">
+        select sum(t.`value`) as `value`,t.`name` from (
+            select sum(t.active_total_electrical_energy) as `value` ,b.device_name `name` from wcs_electrical_energy_collect_info t
+            left join wcs_device_base_info b on t.device_info_id = b.id
+            where t.device_info_id in ( select d.id  from wcs_device_base_info  d
+            where d.device_type = '6' and d.enable_status = 0 and d.del_flag = 0)
+            and  t.collect_time >= CURDATE() - INTERVAL 1 MONTH group by device_info_id , DATE(t.collect_time)
+        )t
+        GROUP BY t.`name`
+        order by `value` desc
+    </select>
+
+</mapper>

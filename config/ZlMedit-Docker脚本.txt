@@ -1,0 +1,12 @@
+docker run -d -p 1935:1935 -p 8070:8070 -p 8554:554 \
+-p 10000:10000 -p 10000:10000/udp -p 8000:8000/udp \
+-p 30000-30070:30000-30070 -p 30000-30070:30000-30070/udp \
+--name zlmediakit \
+--net zlmediakit_network \
+--ip 172.18.0.10 \
+--restart=always \
+--env MODE=standalone \
+-e TZ="Asia/Shanghai" \
+-v /server/docker/zlmediakit/media/bin:/opt/media/bin \
+-v /server/docker/zlmediakit/media/conf:/opt/media/conf \
+zlmediakit/zlmediakit:master

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.CheckRealitygoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckRealitygoods" id="CheckRealitygoodsResult">
+        <result property="id" column="id"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.CheckRealitygoods">
+        select
+            id,
+            check_bill_code,
+            parts_code,
+            only_code,
+            tray_code,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_warehouse_check_realitygoods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

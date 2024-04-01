@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.DryOutbillGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.DryOutbillGoods" id="WmsDryOutbillGoodsResult">
+        <result property="id" column="id"/>
+        <result property="dryOutbillCode" column="dry_outbill_code"/>
+        <result property="charg" column="charg"/>
+        <result property="dryOutbillTime" column="dry_outbill_time"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="model" column="model"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="goodsNum" column="goods_num"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.DryOutbillGoods">
+        select
+            id,
+            dry_outbill_code,
+            parts_code,
+            goods_code,
+            goods_name,
+            measure_unit,
+            model,
+            del_flag,
+            goods_num,
+            area_code,
+            area_name,
+            location_code,
+            location_name,
+            tray_code,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        from
+            wms_dry_outbill_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectByCode" parameterType="java.lang.String" resultType="com.ruoyi.wms.stock.domain.DryOutbillGoods">
+        select
+        id,
+        dry_outbill_code,
+        parts_code,
+        goods_code,
+        goods_name,
+        measure_unit,
+        model,
+        del_flag,
+        goods_num,
+        area_code,
+        area_name,
+        location_code,
+        location_name,
+        tray_code,
+        create_by,
+        create_time,
+        update_by,
+        update_time
+        FROM
+        wms_dry_outbill_goods
+        WHERE dry_outbill_code = #{dryOutbillCode}
+    </select>
+
+    <delete id="deleteByCode">
+        DELETE
+        FROM
+            wms_dry_outbill_goods
+        WHERE
+            dry_outbill_code = #{ew.dryOutbillCode}
+    </delete>
+
+    <select id="getAreaData" resultType="com.ruoyi.wms.stock.domain.DryOutbillGoods">
+        SELECT
+            DISTINCT area_code,
+            area_name
+        FROM
+            wms_dry_outbill_goods
+        WHERE
+            del_flag = 0
+    </select>
+
+    <select id="selectGoodsDetailList" resultType="com.ruoyi.wms.stock.domain.DryOutbillGoods">
+        SELECT
+            g.parts_code,
+            g.goods_code,
+            g.goods_name,
+            g.measure_unit,
+            g.model,
+            g.goods_num
+        FROM
+            wms_dry_outbill_goods g
+            LEFT JOIN wms_dry_outbill o ON g.dry_outbill_code = o.dry_outbill_code
+        WHERE
+        1 = 1
+        <if test="ew.dryOutbillCode!=null and ew.dryOutbillCode!=''">
+            and g.dry_outbill_code = #{ew.dryOutbillCode}
+        </if>
+        <if test="ew.partsCode!=null and ew.partsCode!=''">
+            and g.parts_code like concat('%', #{ew.partsCode}, '%')
+        </if>
+        <if test="ew.goodsName!=null and ew.goodsName!=''">
+            and g.goods_name like concat('%', #{ew.goodsName}, '%')
+        </if>
+    </select>
+</mapper>

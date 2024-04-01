@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.WmsWarehouseCheckDetailMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckDetail" id="WmsWarehouseCheckDetailResult">
+        <result property="id" column="id"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="curtainNum" column="curtain_num"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="lossNum" column="loss_num"/>
+        <result property="profitNum" column="profit_num"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="checkStatus" column="check_status"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        select
+            id,
+            check_bill_code,
+            goods_code,
+            area_code,
+            area_name,
+            location_code,
+            location_name,
+            tray_code,
+            curtain_num,
+            check_num,
+            loss_num,
+            profit_num,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            check_status
+        from
+            wms_warehouse_check_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="updateCheckDetailTrayInfo">
+        update wms_warehouse_check_detail a
+        set a.tray_code = (select b.tray_code from wms_warehouse_location b where a.location_code = b.location_code and b.del_flag = '0' limit 1) ,
+        a.curtain_num = (select count(1) from wms_warehouse_tblstock c where a.tray_code = c.tray_code and c.del_flag = '0' limit 1)
+        where a.check_bill_code = #{checkBillCode} and a.del_flag = '0'
+    </update>
+    <update id="updateCheckDetailcheckNum">
+        update wms_warehouse_check_detail set check_num = curtain_num where del_flag = '0' and check_bill_code = #{checkBillCode} and check_status = '0'
+    </update>
+
+    <select id="selectCheckDetailList" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        select a.area_code areaCode,a.area_name areaName,a.location_code locationCode,a.location_name locationName,a.tray_code trayCode,count(1) curtainNum
+        from wms_warehouse_tblstock a
+        where a.goods_code in
+            <foreach collection="goodsCodeList" item="goodsCode" index="index" open="(" close=")" separator=",">
+                #{goodsCode}
+            </foreach>
+        and a.del_flag = '0'
+        and exists (select * from wms_warehouse_area b where b.area_type = '0' and a.area_code = b.area_code)
+        GROUP BY a.area_code,a.area_name,a.location_code,a.location_name,a.tray_code
+    </select>
+    <select id="selectNum" resultType="com.ruoyi.wms.check.dto.CheckDetailVo">
+        select sum(curtain_num) curtainNum,sum(check_num) checkNum from wms_warehouse_check_detail where del_flag = '0' and check_bill_code = #{checkBillCode}
+    </select>
+
+    <select id="selectCheckDetailByCode" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            id,
+            check_bill_code,
+            `goods_code`,
+            `goods_name`,
+            `area_code`,
+            `area_name`,
+            `location_code`,
+            `location_name`,
+            `tray_code`,
+            `check_status`,
+            `curtain_num`,
+            `check_num`,
+            `loss_num`,
+            `profit_num`
+        FROM
+            wms_warehouse_check_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="delCheckDetail">
+        UPDATE wms_warehouse_check_detail
+        SET del_flag = 1
+        WHERE
+            id = #{id}
+    </update>
+
+    <update id="updateByCode">
+        UPDATE wms_warehouse_check_detail
+        SET del_flag = 1
+        WHERE
+            check_bill_code = #{checkBillCode}
+    </update>
+
+    <select id="getLocationList" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            location_code,
+            location_name
+        FROM
+            wms_warehouse_check_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getCheckDetail" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            id,
+            check_bill_code,
+            `goods_code`,
+            `goods_name`,
+            `area_code`,
+            `area_name`,
+            `location_code`,
+            `location_name`,
+            `tray_code`,
+            curtain_num,
+            check_num,
+            loss_num,
+            profit_num,
+            `check_status`
+        FROM
+        wms_warehouse_check_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+    <select id="getStartCheckOne" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            wc.id,
+            wc.check_bill_code,
+            wc.`goods_code`,
+            wc.`goods_name`,
+            wc.`area_code`,
+            wc.`area_name`,
+            wc.`location_code`,
+            wc.`location_name`,
+            wc.`tray_code`,
+            wc.`check_status`,
+            wc.`curtain_num`,
+            wc.`check_num`,
+            wc.`loss_num`,
+            wc.`profit_num`
+        FROM
+        wms_warehouse_check_detail wc
+        left join wms_warehouse_location lc on lc.location_code=wc.location_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

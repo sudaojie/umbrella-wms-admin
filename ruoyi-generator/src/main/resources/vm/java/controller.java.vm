@@ -1,0 +1,139 @@
+package ${packageName}.controller;
+
+import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.utils.StringUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.core.controller.BaseController;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.BusinessType;
+import ${packageName}.domain.${ClassName};
+import ${packageName}.service.${ClassName}Service;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import org.springframework.web.multipart.MultipartFile;
+import com.ruoyi.common.core.page.TableDataInfo;
+#if($table.crud)
+#elseif($table.tree)
+#end
+
+
+/**
+ * ${functionName}Controller
+ *
+ * @author ${author}
+ * @date ${datetime}
+ */
+@RestController
+@RequestMapping("/${moduleName}/${businessName}")
+public class ${ClassName}Controller extends BaseController {
+
+    @Autowired
+    private ${ClassName}Service ${className}Service;
+
+    /**
+     * 查询${functionName}列表
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:list')")
+    @PostMapping("/list")
+#if($table.crud || $table.sub)
+    public TableDataInfo list(@RequestBody ${ClassName} ${className}) {
+        logger.info("/${moduleName}/${businessName}/list");
+        startPage();
+        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        return getDataTable(list);
+    }
+#elseif($table.tree)
+    public AjaxResult list(@RequestBody ${ClassName} ${className}){
+        logger.info("/${moduleName}/${businessName}/list");
+        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        return success(list);
+    }
+#end
+
+    /**
+     * 导出${functionName}列表
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:export')")
+    @Log(title = "${functionName}", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, ${ClassName} ${className}){
+        logger.info("/${moduleName}/${businessName}/export");
+        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
+        util.exportExcel(response, list, "${functionName}数据");
+    }
+    /**
+     * 导入${functionName}列表
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:import')")
+    @Log(title = "${functionName}", businessType = BusinessType.IMPORT)
+    @PostMapping("/importData")
+    public AjaxResult importData(MultipartFile file, boolean updateSupport)throws Exception{
+        logger.info("/${moduleName}/${businessName}/import");
+        ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
+        List<${ClassName}> ${className}List = util.importExcel(file.getInputStream());
+        String operName = getUsername();
+        String message = ${className}Service.importData(${className}List, updateSupport, operName);
+        return AjaxResult.success(message);
+    }
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response)
+    {
+        ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
+        util.importTemplateExcel(response,"模板数据");
+    }
+    /**
+     * 获取${functionName}详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:query')")
+    @GetMapping(value = "/getInfo/{${pkColumn.javaField}}")
+    public AjaxResult getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField}){
+        logger.info("/${moduleName}/${businessName}/getInfo/${pkColumn.javaField}");
+        return success(${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+    }
+
+    /**
+     * 新增${functionName}
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:add')")
+    @Log(title = "${functionName}", businessType = BusinessType.INSERT)
+    @PostMapping(value = "/add")
+    public AjaxResult add(@RequestBody ${ClassName} ${className}){
+        logger.info("/${moduleName}/${businessName}/add");
+        return AjaxResult.success(${className}Service.insert${ClassName}(${className}));
+    }
+
+    /**
+     * 修改${functionName}
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:edit')")
+    @Log(title = "${functionName}", businessType = BusinessType.UPDATE)
+    @PutMapping(value = "/edit")
+    public AjaxResult edit(@RequestBody ${ClassName} ${className}){
+        logger.info("/${moduleName}/${businessName}/edit");
+        return AjaxResult.success(${className}Service.update${ClassName}(${className}));
+    }
+
+    /**
+     * 删除${functionName}
+     */
+    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:remove')")
+    @Log(title = "${functionName}", businessType = BusinessType.DELETE)
+	@DeleteMapping("/remove/{${pkColumn.javaField}s}")
+    public AjaxResult remove(@PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s){
+        logger.info("/${moduleName}/${businessName}/remove/${pkColumn.javaField}");
+        return AjaxResult.success(${className}Service.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s));
+    }
+
+}

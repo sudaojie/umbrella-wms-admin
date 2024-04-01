@@ -1,0 +1,29 @@
+服务器IP: 192.168.0.94
+端口: 22
+用户名: root
+密码: ttyunbodwtRUXzR1iO
+
+Redis
+ip: 192.168.0.94
+端口: 6379
+密码: adminQAZ123
+配置目录：/etc/redis.conf
+
+MySQL:
+IP: 192.168.0.94
+端口: 3306
+用户名: root
+密码: adminQAZ123
+
+Nginx:
+IP: 192.168.0.94
+端口: 80
+配置目录: /etc/nginx/nginx.conf
+重启目录: /usr/sbin/nginx -s reload
+
+
+wvp_pro：http://10.1.5.220:18080/#/login  admin admin
+
+应用目录:/soft/webapp/
+
+前端项目访问: 10.1.5.166

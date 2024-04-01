@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>ruoyi</artifactId>
+        <groupId>com.ruoyi</groupId>
+        <version>3.8.4</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>ruoyi-wms</artifactId>
+
+
+    <description>WMS仓储模块</description>
+
+    <dependencies>
+        <!-- 通用工具-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-file</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-quartz</artifactId>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>com.github.dathlin</groupId>
+            <artifactId>HslCommunication</artifactId>
+        </dependency>
+        -->
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>mapper/**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+</project>

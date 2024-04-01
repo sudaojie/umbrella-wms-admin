@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.statistics.mapper.OutBillStatisticMapper">
+
+    <resultMap type="com.ruoyi.wms.statistics.domain.OutBillStatistic" id="OutBillResult">
+        <result property="id" column="id"/>
+        <result property="outBillCode" column="out_bill_code"/>
+        <result property="outBillStatus" column="out_bill_status"/>
+        <result property="outBillCategory" column="out_bill_category"/>
+        <result property="freightVehicleNo" column="freight_vehicle_no"/>
+        <result property="receiveAddress" column="receive_address"/>
+        <result property="issuingUnit" column="issuing_unit"/>
+        <result property="shippingType" column="shipping_type"/>
+        <result property="receivingUnit" column="receiving_unit"/>
+        <result property="issuingBasis" column="issuing_basis"/>
+        <result property="address" column="address"/>
+        <result property="outBillNo" column="out_bill_no"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectOutBillList" resultType="com.ruoyi.wms.statistics.domain.OutBillStatistic">
+        SELECT
+            w.out_bill_code,
+            w.out_bill_category,
+            w.create_time,
+            wo.charg,
+            wo.supplier_code,
+            wo.supplier_name,
+            wo.goods_code,
+            wo.goods_name,
+            wo.model,
+            wo.measure_unit,
+            wo.out_bill_num,
+            g.weight,
+            g.volume
+        FROM
+            wms_out_bill w
+            LEFT JOIN wms_outbill_goods wo ON w.out_bill_code = wo.out_bill_code
+            LEFT JOIN wms_goods_info g ON g.goods_code = wo.goods_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        GROUP BY
+        w.out_bill_code , g.goods_code
+    </select>
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.VehicleMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.Vehicle" id="VehicleResult">
+        <result property="id" column="id"/>
+        <result property="vehicleNo" column="vehicle_no"/>
+        <result property="vehicleType" column="vehicle_type"/>
+        <result property="vehicleLoad" column="vehicle_load"/>
+        <result property="driverName" column="driver_name"/>
+        <result property="driverPhone" column="driver_phone"/>
+        <result property="company" column="company"/>
+        <result property="remark" column="remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.Vehicle">
+        select
+        id,
+        vehicle_no,
+        vehicle_type,
+        vehicle_load,
+        driver_name,
+        driver_phone,
+        company,
+        remark,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time
+
+        from
+        wms_warehouse_vehicle
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(*) from wms_warehouse_vehicle where del_flag='0' and vehicle_no=#{object.vehicleNo}
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+    </select>
+    <select id="selectDataByCode" resultType="com.ruoyi.wms.basics.domain.Vehicle">
+        select * from wms_warehouse_vehicle where del_flag='0' and vehicle_no=#{vehicleNo}
+    </select>
+    <select id="getVehicleList" resultType="java.util.Map">
+        select id value,
+        CONCAT(CONCAT(company,'-',driver_name),'-',CONCAT(driver_phone,'-',vehicle_no)) label
+        from wms_warehouse_vehicle
+        where del_flag = '0'
+    </select>
+</mapper>

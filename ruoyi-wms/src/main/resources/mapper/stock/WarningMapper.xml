@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.WarehouseWarningMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.WarehouseWarning" id="WmsWarehouseTblstockResult">
+        <result property="id" column="id"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="charg" column="charg"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="warehouseCode" column="warehouse_code"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="listingTime" column="listing_time"/>
+        <result property="produceTime" column="produce_time"/>
+        <result property="warranty" column="warranty"/>
+        <result property="lockStatus" column="lock_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="goodsNum" column="goodsNum"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.WarehouseWarning">
+        SELECT
+            t.id,
+            t.only_code,
+            t.parts_code,
+            t.goods_code,
+            t.goods_name,
+            t.model,
+            t.measure_unit,
+            t.charg,
+            t.supplier_code,
+            t.supplier_name,
+            t.lock_status,
+            g.inventory_count_max,
+            g.inventory_count_min,
+            count( 1 ) goodsNum
+        FROM
+        wms_warehouse_tblstock t
+        LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        GROUP BY t.goods_code
+    </select>
+
+    <select id="selectByGoodsCode" resultType="java.lang.Integer">
+        SELECT count(t.goods_code)
+        FROM
+        wms_warehouse_tblstock t
+        LEFT JOIN wms_goods_info g ON t.goods_code = g.goods_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectWmsValidityList" resultType="com.ruoyi.wms.stock.domain.WarehouseWarning">
+        SELECT
+            t.*
+        FROM
+        (SELECT
+            t.id,
+            t.supplier_code,
+            t.supplier_name,
+            t.goods_code,
+            t.goods_name,
+            t.model,
+            t.measure_unit,
+            t.only_code,
+            t.parts_code,
+            t.produce_time,
+            t.del_flag,
+            t.warranty,
+            t.period_validity periodValidity,
+            DATEDIFF( t.period_validity, NOW( ) ) overTime
+        FROM
+            wms_warehouse_tblstock t) t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectConfig" resultType="com.ruoyi.wms.stock.domain.WmsWarningConfig">
+        SELECT
+            config_key,
+            config_type,
+            config_name,
+            config_value configValue
+        FROM
+            wms_warning_config
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectDetainedList" resultType="com.ruoyi.wms.stock.domain.WarehouseWarning">
+        SELECT
+        t.*
+        FROM
+        (SELECT
+        t.id,
+        t.supplier_code,
+        t.supplier_name,
+        t.goods_code,
+        t.goods_name,
+        t.model,
+        t.measure_unit,
+        t.only_code,
+        t.parts_code,
+        t.produce_time,
+        t.del_flag,
+        t.listing_time,
+        DATEDIFF( NOW( ), t.listing_time ) listingDate,
+        MOD(FLOOR(DATEDIFF(NOW(), t.listing_time)/30), 12) + 1 detainedMonth
+        FROM
+        wms_warehouse_tblstock t) t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+</mapper>

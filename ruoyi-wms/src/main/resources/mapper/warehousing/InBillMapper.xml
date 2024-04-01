@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.warehousing.mapper.InBillMapper">
+
+    <resultMap type="com.ruoyi.wms.warehousing.domain.InBill" id="InBillResult">
+        <result property="id" column="id"/>
+        <result property="inBillCode" column="in_bill_code"/>
+        <result property="charg" column="charg"/>
+        <result property="inBillStatus" column="in_bill_status"/>
+        <result property="takeTrayStatus" column="take_tray_status"/>
+        <result property="inBillCategory" column="in_bill_category"/>
+        <result property="volume" column="volume"/>
+        <result property="weight" column="weight"/>
+        <result property="docNo" column="doc_no"/>
+        <result property="inBillSerial" column="in_bill_serial"/>
+        <result property="storageSerial" column="storage_serial"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.warehousing.domain.InBill">
+        select
+        id,
+        in_bill_code,
+        charg,
+        TRUNCATE(weight,2) weight,
+        TRUNCATE(volume,2) volume,
+        in_bill_status,
+        take_tray_status,
+        in_bill_category,
+        doc_no,
+        in_bill_serial,
+        storage_serial,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_in_bill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <update id="updateStatusByInBillCode">
+        update wms_in_bill set in_bill_status = #{status}, update_by = #{username}, update_time = now()
+        where in_bill_code = #{inBillCode}
+    </update>
+
+</mapper>

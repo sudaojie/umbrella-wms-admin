@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.WmsTacticsConfigMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.WmsTacticsConfig" id="WmsTacticsConfigResult">
+        <result property="id" column="id"/>
+        <result property="tactics" column="tactics"/>
+        <result property="tacticsContent" column="tactics_content"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.WmsTacticsConfig">
+        select
+            id,
+            tactics,
+            tactics_content,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_tactics_config
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectInbillStatus" resultType="java.lang.Integer">
+        SELECT
+            count( * )
+        FROM
+            wms_in_bill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectOutbillStatus" resultType="java.lang.Integer">
+        SELECT
+            count( * )
+        FROM
+            wms_out_bill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectMovebillStatus" resultType="java.lang.Integer">
+        SELECT
+        count( * )
+        FROM
+        wms_move_list
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectDryOutbillStatus" resultType="java.lang.Integer">
+        SELECT
+        count( * )
+        FROM
+        wms_dry_outbill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectNoListStatus" resultType="java.lang.Integer">
+        SELECT
+        count( * )
+        FROM
+        wms_nolist_wait
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

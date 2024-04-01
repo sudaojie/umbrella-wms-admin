@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.check.mapper.CheckConfigMapper">
+
+    <resultMap type="com.ruoyi.wms.check.domain.CheckConfig" id="CheckConfigResult">
+        <result property="id" column="id"/>
+        <result property="checkId" column="check_id"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="checkBillCode" column="check_bill_code"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.check.domain.CheckConfig">
+        select
+            id,
+            check_id,
+            goods_code,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            check_bill_code
+        from
+            wms_warehouse_check_config
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectCheckConfigByCode" resultType="com.ruoyi.wms.check.domain.CheckDetail">
+        SELECT
+            id,
+            check_bill_code,
+            goods_code,
+            goods_name
+        FROM
+            wms_warehouse_check_config
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="delCheckConfig">
+        UPDATE wms_warehouse_check_config
+        SET del_flag = 1
+        WHERE
+            id = #{id}
+    </update>
+
+    <update id="updateConfigsByCode">
+        UPDATE wms_warehouse_check_config
+        SET del_flag = 1
+        WHERE
+            check_bill_code = #{checkBillCode}
+    </update>
+</mapper>

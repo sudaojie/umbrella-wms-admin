@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsFreshAirThtbRealtionMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsFreshAirThtbRealtion" id="WcsFreshAirThtbRealtionResult">
+        <result property="id" column="id"/>
+        <result property="freshAirDeviceNo" column="fresh_air_device_no"/>
+        <result property="thtbDeviceNo" column="thtb_device_no"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.WcsFreshAirThtbRealtion">
+        SELECT
+        wfatr.id,
+        wfatr.fresh_air_device_no,
+        count( thtb_device_no ) as num,
+        ( SELECT wdbi.device_name FROM wcs_device_base_info wdbi WHERE wdbi.device_no = wfatr.fresh_air_device_no ) AS initDeviceName,
+        wfatr.remark
+        FROM
+        wcs_fresh_air_thtb_realtion wfatr
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="listTypeDeviceInfos" resultType="com.ruoyi.wcs.domain.WcsDeviceBaseInfo">
+        select
+        wdbi.id,
+        wdbi.device_no,
+        wdbi.device_name
+        from
+        wcs_device_base_info wdbi
+        where wdbi.device_type = #{deviceType} and enable_status = 0
+        order by create_time desc
+    </select>
+
+</mapper>

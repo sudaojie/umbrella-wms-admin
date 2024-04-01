@@ -1,0 +1,26 @@
+package ${packageName}.mapper;
+
+import java.util.List;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import ${packageName}.domain.${ClassName};
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * ${functionName}Mapper接口
+ *
+ * @author ${author}
+ * @date ${datetime}
+ */
+public interface ${ClassName}Mapper extends BaseMapper<${ClassName}> {
+
+
+    /**
+     * 查询${functionName}列表
+     *
+     * @param ${className} ${functionName}
+     * @return ${functionName}集合
+     */
+    List<${ClassName}> select(@Param("ew") QueryWrapper<${ClassName}> ${className});
+
+}

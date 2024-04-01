@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.wcstask.mapper.WmsWcsCallbackInfoMapper">
+
+    <resultMap type="com.ruoyi.wms.wcstask.domain.WmsWcsCallbackInfo" id="WmsWcsCallbackInfoResult">
+        <result property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="taskType" column="task_type"/>
+        <result property="areaType" column="area_type"/>
+        <result property="taskNo" column="task_no"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="startAreaCode" column="start_area_code"/>
+        <result property="endAreaCode" column="end_area_code"/>
+        <result property="startLocationCode" column="start_location_code"/>
+        <result property="endLocationCode" column="end_location_code"/>
+        <result property="doc" column="doc"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.wcstask.domain.WmsWcsCallbackInfo">
+        select
+            id,
+            `type`,
+            task_type,
+            area_type,
+            task_no,
+            tray_code,
+            start_area_code,
+            end_area_code,
+            start_location_code,
+            end_location_code,
+            doc,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_wcs_callback_info
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

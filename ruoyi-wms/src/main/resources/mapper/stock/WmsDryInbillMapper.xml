@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.WmsDryInbillMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.WmsDryInbill" id="WmsDryInbillResult">
+        <result property="id" column="id"/>
+        <result property="dryOutbillCode" column="dry_outbill_code"/>
+        <result property="dryInbillCode" column="dry_inbill_code"/>
+        <result property="dryInbillStatus" column="dry_inbill_status"/>
+        <result property="dryInbillTime" column="dry_inbill_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.WmsDryInbill">
+        select
+            id,
+            dry_outbill_code,
+            dry_inbill_code,
+            dry_inbill_status,
+            dry_inbill_time,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_dry_inbill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectPartsCodeByIds" resultType="com.ruoyi.wms.stock.domain.WmsDryInbillGoods">
+        select * from wms_dry_inbill_goods where dry_inbill_code in
+              (select dry_inbill_code from wms_dry_inbill where id in
+        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+               )
+    </select>
+
+</mapper>

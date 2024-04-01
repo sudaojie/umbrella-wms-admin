@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.GoodsInfoMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.GoodsInfo" id="GoodsInfoResult">
+        <result property="id" column="id"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="goodsSimpleName" column="goods_simple_name"/>
+        <result property="model" column="model"/>
+        <result property="goodsCategoryId" column="goods_category_id"/>
+        <result property="areaId" column="area_id"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="packing" column="packing"/>
+        <result property="length" column="length"/>
+        <result property="width" column="width"/>
+        <result property="height" column="height"/>
+        <result property="volume" column="volume"/>
+        <result property="num" column="num"/>
+        <result property="weight" column="weight"/>
+        <result property="inventoryCountMax" column="inventory_count_max"/>
+        <result property="inventoryCountMin" column="inventory_count_min"/>
+        <result property="warranty" column="warranty"/>
+        <result property="enableStatus" column="enable_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.GoodsInfo">
+        select
+        id,
+        goods_code,
+        goods_name,
+        goods_simple_name,
+        model,
+        (select CONCAT(category_code,'-',category_name) from wms_goods_category
+        where del_flag = '0' and category_code=goods_category_id) goods_category_id,
+        (select CONCAT(area_code,'-',area_name) from wms_warehouse_area
+        where del_flag = '0' and area_code=area_id) area_id,
+        (select CONCAT(warehouse_code,'-',warehouse_name) from wms_warehouse_info
+        where del_flag = '0' and warehouse_code=warehouse_id) warehouse_id,
+        measure_unit,
+        packing,
+        length,
+        width,
+        height,
+        volume,
+        weight,
+        num,
+        inventory_count_max,
+        inventory_count_min,
+        warranty,
+        enable_status,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_goods_info
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(*) from wms_goods_info where del_flag='0' and goods_code=#{object.goodsCode}
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+    </select>
+    <select id="selectDataByCode" resultType="com.ruoyi.wms.basics.domain.GoodsInfo">
+        select * from wms_goods_info where del_flag='0' and goods_code=#{goodsCode}
+    </select>
+    <select id="selectDataByCategoryCode" resultType="java.lang.Integer">
+        select count(*) from wms_goods_info where del_flag='0' and goods_category_id=#{categoryCode}
+    </select>
+    <select id="selectDataBySupplierCode" resultType="java.lang.Integer">
+        select count(*) from wms_goods_info where del_flag='0' and supplier_id=#{supplierCode}
+    </select>
+
+    <select id="selectGoodsInfoList" resultType="com.ruoyi.wms.basics.domain.GoodsInfo">
+        SELECT
+            wg.goods_code,
+            wg.goods_name,
+            wg.weight,
+	        ( wg.length / 100 ) * ( wg.width / 100 ) * ( wg.height / 100 ) volume,
+            wg.measure_unit,
+            wg.warranty
+        FROM
+            wms_goods_info wg
+    </select>
+    <select id="selectByAreaId" resultType="java.lang.Integer">
+        select count(1) from wms_goods_info where del_flag='0' and enable_status = '0' and area_id = #{object.areaId}
+    </select>
+</mapper>

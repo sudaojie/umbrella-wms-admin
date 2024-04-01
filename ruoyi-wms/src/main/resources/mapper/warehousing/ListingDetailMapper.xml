@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.warehousing.mapper.ListingDetailMapper">
+
+    <resultMap type="com.ruoyi.wms.warehousing.domain.ListingDetail" id="ListingDetailResult">
+        <result property="id" column="id"/>
+        <result property="listingCode" column="listing_code"/>
+        <result property="inBillCode" column="in_bill_code"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="listingStatus" column="listing_status"/>
+        <result property="listingTime" column="listing_time"/>
+        <result property="produceTime" column="produce_time"/>
+        <result property="warranty" column="warranty"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.warehousing.domain.ListingDetail">
+        select
+        id,
+        listing_code,
+        in_bill_code,
+        only_code,
+        parts_code,
+        goods_code,
+        goods_name,
+        model,
+        measure_unit,
+        supplier_code,
+        supplier_name,
+        tray_code,
+        listing_status,
+        listing_time,
+        produce_time,
+        warranty,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_listing_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectPutOnData" resultType="com.ruoyi.wms.warehousing.vo.ListingDetailVo">
+        SELECT
+        wld.tray_code trayCode,
+        concat(wgc.category_name, '-', wgi.model) as categoryName,
+        IFNULL(count(wld.parts_code), 0) as goodsNum
+        FROM
+        wms_listing_detail wld left join wms_goods_info wgi on wld.goods_code = wgi.goods_code
+        left join wms_goods_category wgc on wgi.goods_category_id = wgc.category_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <update id="updateStatusByIds">
+        update wms_listing_detail set listing_status = #{status}, listing_time = now(), update_by = #{username},
+        update_time = now()
+        and id in
+        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectWmsGroupDiskDataInfoList" resultType="com.ruoyi.wms.group.disk.data.domain.WmsGroupDiskDataInfo">
+        SELECT
+        wld.tray_code trayCode,
+        concat(wgc.category_name, '-', wgi.goods_name) as goodsType,
+        IFNULL(count(wld.parts_code), 0) as actualNum,
+        wld.create_time as groupDiskTime
+        FROM
+        wms_listing_detail wld left join wms_goods_info wgi on wld.goods_code = wgi.goods_code
+        left join wms_goods_category wgc on wgi.goods_category_id = wgc.category_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getGoodsInfoOnGroupTray" resultType="com.ruoyi.wms.group.disk.data.domain.WmsGroupDiskGoodsInfo">
+        SELECT
+        wld.in_bill_code as inBillCode,
+        wld.only_code as onlyCode,
+        wld.parts_code as partsCode,
+        wld.tray_code as trayCode,
+        wld.goods_name as goodsName,
+        wld.goods_code as goodsCode,
+        wld.supplier_name as supplierName
+        FROM
+        wms_listing_detail wld
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

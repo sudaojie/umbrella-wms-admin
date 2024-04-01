@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsDeviceBaseInfoMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsDeviceBaseInfo" id="WcsDeviceBaseInfoResult">
+        <result property="id" column="id"/>
+        <result property="deviceNo" column="device_no"/>
+        <result property="deviceName" column="device_name"/>
+        <result property="devicePosition" column="device_position"/>
+        <result property="warehouseAreaCode" column="warehouse_area_code"/>
+        <result property="deviceType" column="device_type"/>
+        <result property="deviceArea" column="device_area"/>
+        <result property="deviceAddress" column="device_address"/>
+        <result property="deviceIp" column="device_ip"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="coilAddress" column="coil_address"/>
+        <result property="smokeFlag" column="smoke_flag"/>
+        <result property="deviceImagePath" column="device_image_path"/>
+        <result property="devicePort" column="device_port"/>
+        <result property="deviceSize" column="device_size"/>
+        <result property="deviceProducer" column="device_producer"/>
+        <result property="enableStatus" column="enable_status"/>
+        <result property="runningStatus" column="running_status"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.WcsDeviceBaseInfo">
+        select
+        id,
+        device_no,
+        device_name,
+        device_position,
+        warehouse_area_code,
+        device_type,
+        device_area,
+        device_address,
+        device_ip,
+        device_port,
+        channel_id,
+        smoke_flag,
+        device_image_path,
+        device_size,
+        device_producer,
+        coil_address,
+        enable_status,
+        running_status,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wcs_device_base_info
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="getSensorInfoIds" resultType="java.lang.String">
+        select
+        distinct thtb_device_no
+        from
+        wcs_fresh_air_thtb_realtion
+        where del_flag = '0'
+        order by create_time desc
+    </select>
+
+    <select id="getGateWayDeviceInfoIds" resultType="java.lang.String">
+        select
+        distinct no_ip_device_no
+        from
+        wcs_gate_way_realtion
+        where del_flag = '0'
+        order by create_time desc
+    </select>
+
+    <select id="selectGateWayCollect" resultType="com.ruoyi.wcs.domain.WcsDeviceBaseInfo">
+           select * from wcs_device_base_info d left join wcs_gate_way_realtion t on d.device_no = t.no_ip_device_no
+           where d.device_type = #{deviceType} and t.gate_way_device_no = #{gateWayDeviceNo} and d.device_address = #{deviceAddress}
+    </select>
+
+</mapper>

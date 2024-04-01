@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsFreshAirDetailInfoMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsFreshAirDetailInfo" id="WcsFreshAirDetailInfoResult">
+        <result property="id" column="id"/>
+        <result property="deviceInfoId" column="device_info_id"/>
+        <result property="templature" column="templature"/>
+        <result property="humidity" column="humidity"/>
+        <result property="templatureLow" column="templature_low"/>
+        <result property="templatureHigh" column="templature_high"/>
+        <result property="humidityLow" column="humidity_low"/>
+        <result property="humidityHigh" column="humidity_high"/>
+        <result property="systemStatus" column="system_status"/>
+        <result property="switchStatus" column="switch_status"/>
+    </resultMap>
+
+    <select id="query" resultType="com.ruoyi.wcs.domain.vo.WcsFreshAirVo">
+        SELECT
+        t.id,
+        t.device_no,
+        t.device_name,
+        t.device_area,
+        r.id as refreshAirId,
+        r.device_info_id,
+        r.templature,
+        r.humidity,
+        r.templature_low,
+        r.templature_high,
+        r.humidity_low,
+        r.humidity_high,
+        r.system_status,
+        r.switch_status
+        FROM
+        wcs_device_base_info t
+        LEFT JOIN wcs_fresh_air_detail_info r
+        on t.id = r.device_info_id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="queryExplosiveFlashList" resultType="com.ruoyi.wcs.domain.vo.WcsFreshAirVo">
+        select
+            max(case when config_id = '75' then config_value end) as templatureLow,
+            max(case when config_id = '77' then config_value end) as templatureHigh,
+            max(case when config_id = '79' then config_value end) as humidityLow,
+            max(case when config_id = '81' then config_value end) as humidityHigh
+        from sys_config
+        HAVING
+            templatureLow IS NOT NULL
+           AND templatureHigh IS NOT NULL
+           AND humidityLow IS NOT NULL
+           AND humidityHigh IS NOT NULL;
+    </select>
+
+</mapper>

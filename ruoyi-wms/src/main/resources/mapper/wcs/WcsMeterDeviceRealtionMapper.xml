@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsMeterDeviceRealtionMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsMeterDeviceRealtion" id="WcsMeterDeviceRealtionResult">
+        <result property="id" column="id"/>
+        <result property="meterDeviceNo" column="meter_device_no"/>
+        <result property="deviceNo" column="device_no"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <select id="selectMeterRelatedDevices" resultType="java.lang.String">
+        select distinct device_no from wcs_meter_device_realtion
+    </select>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.WcsMeterDeviceRealtion">
+        SELECT
+        a.id,
+        a.meter_device_no,
+        a.remark,
+        a.device_name as initDeviceName,
+        sum( CASE WHEN a.device_type = 2 THEN 1 ELSE 0 END ) AS stackerNum,
+        sum( CASE WHEN a.device_type = 5 THEN 1 ELSE 0 END ) AS lightNum,
+        sum( CASE WHEN a.device_type = 7 THEN 1 ELSE 0 END ) AS freshNum
+        FROM
+        (
+        SELECT
+        wgwr.id,
+        wgwr.meter_device_no,
+        wgwr.remark,
+        wgwr.device_no,
+        wdb.device_type,
+        wdbi.device_name
+        FROM
+        wcs_meter_device_realtion wgwr
+        LEFT JOIN wcs_device_base_info wdbi ON wgwr.meter_device_no = wdbi.device_no
+        LEFT JOIN wcs_device_base_info wdb ON wgwr.device_no = wdb.device_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        ) a
+        GROUP BY
+        a.meter_device_no
+    </select>
+
+</mapper>

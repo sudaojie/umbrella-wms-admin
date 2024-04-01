@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.outbound.mapper.OutBillMapper">
+
+    <resultMap type="com.ruoyi.wms.outbound.domain.OutBill" id="OutBillResult">
+        <result property="id" column="id"/>
+        <result property="outBillCode" column="out_bill_code"/>
+        <result property="outBillTime" column="out_bill_time"/>
+        <result property="outBillStatus" column="out_bill_status"/>
+        <result property="outBillCategory" column="out_bill_category"/>
+        <result property="freightVehicleNo" column="freight_vehicle_no"/>
+        <result property="receiveAddress" column="receive_address"/>
+        <result property="issuingUnit" column="issuing_unit"/>
+        <result property="shippingType" column="shipping_type"/>
+        <result property="receivingUnit" column="receiving_unit"/>
+        <result property="issuingBasis" column="issuing_basis"/>
+        <result property="address" column="address"/>
+        <result property="outBillNo" column="out_bill_no"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.outbound.domain.OutBill">
+        select
+        id,
+        out_bill_code,
+        out_bill_time,
+        out_bill_status,
+        out_bill_category,
+        freight_vehicle_no,
+        receive_address,
+        issuing_unit,
+        shipping_type,
+        receiving_unit,
+        issuing_basis,
+        address,
+        out_bill_no,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_out_bill
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+    <select id="selectData" resultType="com.ruoyi.wms.outbound.domain.OutBill">
+        select
+            out_bill_code,
+            (select dict_label from sys_dict_data where dict_type='wms_outbill_type' and dict_value=out_bill_category) out_bill_category,
+            create_by,
+            create_time
+        from
+            wms_out_bill where id=#{id}
+    </select>
+
+</mapper>

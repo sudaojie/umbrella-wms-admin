@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.move.mapper.WmsMoveDetailMapper">
+
+    <resultMap type="com.ruoyi.wms.move.domain.WmsMoveDetail" id="WmsMoveDetailResult">
+        <result property="id" column="id"/>
+        <result property="moveCode" column="move_code"/>
+        <result property="outTrayCode" column="out_tray_code"/>
+        <result property="moveStatus" column="move_status"/>
+        <result property="outWarehouseCode" column="out_warehouse_code"/>
+        <result property="outWarehouseName" column="out_warehouse_name"/>
+        <result property="outAreaCode" column="out_area_code"/>
+        <result property="outAreaName" column="out_area_name"/>
+        <result property="outLocationCode" column="out_location_code"/>
+        <result property="outLocationName" column="out_location_name"/>
+        <result property="inWarehouseCode" column="in_warehouse_code"/>
+        <result property="inWarehouseName" column="in_warehouse_name"/>
+        <result property="inAreaCode" column="in_area_code"/>
+        <result property="inAreaName" column="in_area_name"/>
+        <result property="inLocationCode" column="in_location_code"/>
+        <result property="inLocationName" column="in_location_name"/>
+        <result property="inTrayCode" column="in_tray_code"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.move.domain.WmsMoveDetail">
+        select
+            id,
+            move_code,
+            out_tray_code,
+            move_status,
+            out_warehouse_code,
+            out_warehouse_name,
+            out_area_code,
+            out_area_name,
+            out_location_code,
+            out_location_name,
+            in_warehouse_code,
+            in_warehouse_name,
+            in_area_code,
+            in_area_name,
+            in_location_code,
+            in_location_name,
+            in_tray_code,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark
+        from
+            wms_move_detail
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

@@ -1,0 +1,46 @@
+import request from '@/utils/request'
+
+let basePath = '/${moduleName}/${businessName}';
+
+// 查询${functionName}列表
+export function list${BusinessName}(data) {
+  return request({
+    url: `${basePath}/list?pageNum=${data.pageNum}&pageSize=${data.pageSize}`,
+    method: 'post',
+    data: data
+  })
+}
+
+// 查询${functionName}详细
+export function get${BusinessName}(${pkColumn.javaField}) {
+  return request({
+    url: `${basePath}/getInfo/${id}`,
+    method: 'get'
+  })
+}
+
+// 新增${functionName}
+export function add${BusinessName}(data) {
+  return request({
+    url: `${basePath}/add`,
+    method: 'post',
+    data: data
+  })
+}
+
+// 修改${functionName}
+export function update${BusinessName}(data) {
+  return request({
+    url: `${basePath}/edit`,
+    method: 'put',
+    data: data
+  })
+}
+
+// 删除${functionName}
+export function del${BusinessName}(${pkColumn.javaField}) {
+  return request({
+    url: `${basePath}/remove/${${pkColumn.javaField}}`,
+    method: 'delete'
+  })
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.GoodsCategoryMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.GoodsCategory" id="WmsGoodsCategoryResult">
+        <result property="id" column="id"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.GoodsCategory">
+        select
+        id,
+        category_code,
+        category_name,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_goods_category
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by category_code
+    </select>
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(*) from wms_goods_category where del_flag='0' and category_code=#{object.categoryCode}
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+    </select>
+    <select id="selectDataByCode" resultType="com.ruoyi.wms.basics.domain.GoodsCategory">
+        select * from wms_goods_category where del_flag='0' and category_code=#{categoryCode}
+    </select>
+    <select id="getGoodscategoryData" resultType="java.util.Map">
+        select category_code value,
+        CONCAT(category_code,'-',category_name)   label
+        from wms_goods_category
+        where del_flag = '0'
+    </select>
+
+</mapper>

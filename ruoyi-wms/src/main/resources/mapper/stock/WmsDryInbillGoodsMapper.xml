@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.stock.mapper.WmsDryInbillGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.stock.domain.WmsDryInbillGoods" id="WmsDryInbillGoodsResult">
+        <result property="id" column="id"/>
+        <result property="dryInbillCode" column="dry_inbill_code"/>
+        <result property="dryInbillStatus" column="dry_inbill_status"/>
+        <result property="charg" column="charg"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="model" column="model"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="goodsNum" column="goods_num"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="dryInbillTime" column="dry_inbill_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.stock.domain.WmsDryInbillGoods">
+        select
+        id,
+        dry_inbill_code,dry_inbill_status,
+        charg,
+        parts_code,
+        goods_code,
+        goods_name,
+        measure_unit,
+        model,
+        del_flag,
+        goods_num,
+        area_code,
+        area_name,
+        location_code,
+        location_name,
+        tray_code,
+        dry_inbill_time,
+        create_by,
+        create_time,
+        update_by,
+        update_time
+        from
+        wms_dry_inbill_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

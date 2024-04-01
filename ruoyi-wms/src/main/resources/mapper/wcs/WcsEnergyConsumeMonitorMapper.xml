@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsEnergyConsumeMonitorMapper">
+
+
+    <select id="selectHistoryRecords" resultType="com.ruoyi.wcs.domain.WcsElectricalEnergyCollectInfo">
+        select t.id, b.device_name as device_info_id, t.postal_address, t.active_total_electrical_energy, t.collect_time
+        from wcs_electrical_energy_collect_info t left join wcs_device_base_info b on t.device_info_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getTotalEnergy" resultType="java.math.BigDecimal">
+        select case when sum(b.num) is null then 0 else sum(b.num) end from (
+        select a.device_info_id,a.collect_time, sum(a.active_total_electrical_energy) num from (
+        select t.id, t.device_info_id, t.postal_address, t.active_total_electrical_energy, t.collect_time
+        from wcs_electrical_energy_collect_info t
+        <where>
+        ${ew.sqlSegment}
+        </where>
+        ) a  GROUP BY TO_DAYS(a.collect_time ),a.device_info_id
+        ) b
+    </select>
+
+    <select id="getLeastTime" resultType="java.lang.String">
+        select date_format(t.collect_time,'%k:%i') from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by t.collect_time desc limit 1
+    </select>
+
+    <select id="getMaxEnergy" resultType="java.math.BigDecimal">
+        select ifnull(max(b.num), 0) from (select a.device_info_id,  MAX(CAST(a.active_total_electrical_energy AS DECIMAL(20, 2))) num from (select t.id,
+        t.device_info_id,
+        t.postal_address, t.active_total_electrical_energy, t.collect_time from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>) a group by a.device_info_id) b
+    </select>
+
+    <select id="getMinEnergy" resultType="java.math.BigDecimal">
+        select ifnull(min(b.num), 0) from (select a.device_info_id, min(CAST(a.active_total_electrical_energy AS DECIMAL(20, 2))) num from (select t.id,
+        t.device_info_id,
+        t.postal_address, t.active_total_electrical_energy, t.collect_time from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>) a group by a.device_info_id) b
+    </select>
+
+    <select id="getEnergyChartData" resultType="com.ruoyi.wcs.domain.vo.WcsEnergyChartsVo">
+        SELECT date(ss.time) `name`, IFNULL(am.value, 0) `value`
+        FROM (
+        SELECT DATE_ADD(#{startTime}, INTERVAL t.a DAY) AS time
+        FROM (
+        SELECT (t3.a * 100 + t2.a * 10 + t1.a) AS a
+        FROM
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t1
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t2
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t3
+        ) AS t
+        WHERE DATE_ADD(#{startTime}, INTERVAL t.a DAY) &lt;= #{endTime}
+        ) AS ss
+        LEFT JOIN (
+        select time,sum(a.count) value from (
+        SELECT date(t.collect_time) AS time, IFNULL(sum(t.active_total_electrical_energy), 0) AS count
+        FROM wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        GROUP BY  TO_DAYS(t.collect_time ),t.device_info_id
+        ) a GROUP BY  TO_DAYS(a.time )
+        ) AS am ON ss.time = am.time  ORDER BY ss.time
+    </select>
+
+    <select id="selectVoltageCurrentHistoryRecords" resultType="com.ruoyi.wcs.domain.WcsVoltageCurrentCollectInfo">
+        select t.id, b.device_name as device_info_id, t.postal_address, t.phase_voltage_a, t.phase_voltage_b,
+        t.phase_voltage_c, t.phase_current_a, t.phase_current_b, t.phase_current_c, t.collect_time from
+        wcs_voltage_current_collect_info t left join wcs_device_base_info b on t.device_info_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectPowerHistoryRecords" resultType="com.ruoyi.wcs.domain.WcsPowerCollectInfo">
+        select t.id, b.device_name as device_info_id, t.postal_address, t.total_active_power, t.phase_active_power_a,
+        t.phase_active_power_b, t.phase_active_power_c, t.total_reactive_power, t.phase_reactive_power_a,
+        t.phase_reactive_power_b, t.phase_reactive_power_c, t.collect_time from wcs_power_collect_info t left join
+        wcs_device_base_info b on t.device_info_id = b.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="getVoltageCurrentChartData" resultType="com.ruoyi.wcs.domain.vo.WcsVoltageCurrentChartsVo">
+        SELECT date(ss.time) `name`,
+        IFNULL(am.phaseVoltageA, 0) `phaseVoltageA`,
+        IFNULL(am.phaseVoltageB, 0) `phaseVoltageB`,
+        IFNULL(am.phaseVoltageC, 0) `phaseVoltageC`,
+        IFNULL(am.phaseCurrentA, 0) `phaseCurrentA`,
+        IFNULL(am.phaseCurrentB, 0) `phaseCurrentB`,
+        IFNULL(am.phaseCurrentC, 0) `phaseCurrentC`
+        FROM (
+        SELECT DATE_ADD(#{startTime}, INTERVAL t.a DAY) AS time
+        FROM (
+        SELECT (t3.a * 100 + t2.a * 10 + t1.a) AS a
+        FROM
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t1
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t2
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t3
+        ) AS t
+        WHERE DATE_ADD(#{startTime}, INTERVAL t.a DAY) &lt;= #{endTime}
+        ) AS ss
+        LEFT JOIN (
+        SELECT date(t.collect_time) AS time,t.device_info_id,
+        IFNULL(MAX(CAST(t.phase_voltage_a AS DECIMAL(20, 2))), 0.0) AS phaseVoltageA,
+        IFNULL(MAX(CAST(t.phase_voltage_b AS DECIMAL(20, 2))), 0.0) AS phaseVoltageB,
+        IFNULL(MAX(CAST(t.phase_voltage_c AS DECIMAL(20, 2))), 0.0) AS phaseVoltageC,
+        IFNULL(MAX(CAST(t.phase_current_a AS DECIMAL(20, 2))), 0.0) AS phaseCurrentA,
+        IFNULL(MAX(CAST(t.phase_current_b AS DECIMAL(20, 2))), 0.0) AS phaseCurrentB,
+        IFNULL(MAX(CAST(t.phase_current_c AS DECIMAL(20, 2))), 0.0) AS phaseCurrentC
+        FROM wcs_voltage_current_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        GROUP BY  TO_DAYS(t.collect_time)
+        ) AS am ON ss.time = am.time ORDER BY ss.time
+    </select>
+
+    <select id="getPowerChartData" resultType="com.ruoyi.wcs.domain.vo.WcsPowerChartsVo">
+        SELECT date(ss.time) `name`,
+        IFNULL(am.totalActivePower, 0) `totalActivePower`,
+        IFNULL(am.phaseActivePowerA, 0) `phaseActivePowerA`,
+        IFNULL(am.phaseActivePowerB, 0) `phaseActivePowerB`,
+        IFNULL(am.phaseActivePowerC, 0) `phaseActivePowerC`,
+        IFNULL(am.totalReactivePower, 0) `totalReactivePower`,
+        IFNULL(am.phaseReactivePowerA, 0) `phaseReactivePowerA`,
+        IFNULL(am.phaseReactivePowerB, 0) `phaseReactivePowerB`,
+        IFNULL(am.phaseReactivePowerC, 0) `phaseReactivePowerC`
+        FROM (
+        SELECT DATE_ADD(#{startTime}, INTERVAL t.a DAY) AS time
+        FROM (
+        SELECT (t3.a * 100 + t2.a * 10 + t1.a) AS a
+        FROM
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t1
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t2
+        CROSS JOIN
+        (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS t3
+        ) AS t
+        WHERE DATE_ADD(#{startTime}, INTERVAL t.a DAY) &lt;= #{endTime}
+        ) AS ss
+        LEFT JOIN (
+        SELECT
+        date(t.collect_time)  AS time,
+        IFNULL(MAX(CAST(t.total_active_power AS DECIMAL(20, 2))), 0.0) AS totalActivePower,
+        IFNULL(MAX(CAST(t.phase_active_power_a AS DECIMAL(20, 2))), 0.0) AS phaseActivePowerA,
+        IFNULL(MAX(CAST(t.phase_active_power_b AS DECIMAL(20, 2))), 0.0) AS phaseActivePowerB,
+        IFNULL(MAX(CAST(t.phase_active_power_c AS DECIMAL(20, 2))), 0.0) AS phaseActivePowerC,
+        IFNULL(MAX(CAST(t.total_reactive_power AS DECIMAL(20, 2))), 0.0) AS totalReactivePower,
+        IFNULL(MAX(CAST(t.phase_reactive_power_a AS DECIMAL(20, 2))), 0.0) AS phaseReactivePowerA,
+        IFNULL(MAX(CAST(t.phase_reactive_power_b AS DECIMAL(20, 2))), 0.0) AS phaseReactivePowerB,
+        IFNULL(MAX(CAST(t.phase_reactive_power_c AS DECIMAL(20, 2))), 0.0) AS phaseReactivePowerC
+        FROM
+        wcs_power_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        GROUP BY  TO_DAYS(t.collect_time )
+        ) AS am ON ss.time = am.time ORDER BY ss.time
+    </select>
+
+    <select id="selectDiffList" resultType="com.ruoyi.wcs.domain.WcsPowerCollectInfo">
+        select * from wcs_power_collect_info where device_info_id = #{deviceInfoId} and postal_address = #{deviceAddress} and (SELECT TIMESTAMPDIFF(SECOND,collect_time, #{date}) &lt; 3);
+    </select>
+
+    <select id="selectDiffVcList" resultType="com.ruoyi.wcs.domain.WcsVoltageCurrentCollectInfo">
+        select * from wcs_voltage_current_collect_info where device_info_id = #{deviceInfoId} and postal_address = #{deviceAddress} and (SELECT TIMESTAMPDIFF(SECOND,collect_time, #{date}) &lt; 3);
+    </select>
+
+    <select id="getTotalEnergyDay" resultType="java.math.BigDecimal">
+        select ifnull(sum(count), 0) from (
+        select t.device_info_id, sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+            AND t.collect_time >= CURDATE()
+            AND t.collect_time &lt; CURDATE() + INTERVAL 1 DAY
+        </where>
+        GROUP BY t.device_info_id,TO_DAYS(t.collect_time)
+        )a
+    </select>
+
+    <select id="getTotalEnergyWeek" resultType="java.math.BigDecimal">
+        select ifnull(sum(c.`num`), 0) from (SELECT date_add( curdate(), INTERVAL ( cast( help_topic_id AS signed ) - 7 ) DAY ) `time`, ifnull( am.count, 0 )
+        `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+            group by TO_DAYS(t.collect_time),t.device_info_id
+        ) am
+        ON date_add( curdate(), INTERVAL ( cast( h.help_topic_id AS signed ) - 7 ) DAY ) = am.time
+        WHERE h.help_topic_id &lt; 7 ORDER BY h.help_topic_id) c
+    </select>
+
+    <select id="getTotalEnergyMonth" resultType="java.math.BigDecimal">
+        select ifnull(sum(c.`num`), 0) from (SELECT date_add(DATE_ADD(curdate(), INTERVAL - DAY(curdate()) + 1 DAY),INTERVAL (cast( help_topic_id AS signed
+        ) ) DAY ) `time` ,ifnull( am.count, 0 ) `num`
+        FROM mysql.help_topic h
+        LEFT JOIN (
+        select sum(t.active_total_electrical_energy) as count, date(t.collect_time) as time from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        group by TO_DAYS(t.collect_time),t.device_info_id
+        ) am
+        ON date_add(DATE_ADD(curdate(), INTERVAL - DAY(curdate()) + 1 DAY), INTERVAL (cast( help_topic_id AS signed ) -
+        1 ) DAY ) = am.time
+        WHERE help_topic_id &lt; day(last_day(curdate())) ORDER BY h.help_topic_id) c
+    </select>
+
+    <select id="getYesterdayData" resultType="com.ruoyi.wcs.domain.WcsElectricalEnergyCollectInfo">
+        select * from wcs_electrical_energy_collect_info t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        ORDER BY ABS(TIMESTAMPDIFF(SECOND, t.collect_time, NOW()))
+        LIMIT 1
+    </select>
+
+</mapper>

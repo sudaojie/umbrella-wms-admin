@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.TrayModelMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.TrayModel" id="WmsTrayModelResult">
+        <result property="id" column="id"/>
+        <result property="trayModelCode" column="tray_model_code"/>
+        <result property="trayModelName" column="tray_model_name"/>
+        <result property="modelLength" column="model_length"/>
+        <result property="modelWidth" column="model_width"/>
+        <result property="modelHeight" column="model_height"/>
+        <result property="modelVolume" column="model_volume"/>
+        <result property="modelWeight" column="model_weight"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.TrayModel">
+        select
+            id,
+            tray_model_code,
+            tray_model_name,
+            model_length,
+            model_width,
+            model_height,
+            model_volume,
+            model_weight
+        from
+            wms_tray_model
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="getTrayModelData" resultType="java.util.Map">
+        SELECT
+            tray_model_code value,
+            CONCAT(tray_model_code,'-',tray_model_name) label,
+            model_length trayLength,
+            model_width trayWidth,
+            model_height trayHeight,
+            model_volume trayVolume,
+            model_weight trayLimitWeight
+        FROM
+            wms_tray_model
+        WHERE
+            del_flag = 0
+    </select>
+
+    <select id="selectSysTrayModelByCode" resultType="com.ruoyi.wms.basics.domain.TrayModel">
+        SELECT
+            tray_model_code
+        FROM
+            wms_tray_model
+        WHERE
+            del_flag = 0 and tray_model_code = #{ew.trayModelCode}
+    </select>
+
+    <select id="checkData" resultType="com.ruoyi.wms.basics.domain.TrayModel">
+        SELECT
+            tray_model_code
+        FROM
+            wms_tray_model
+        WHERE
+            del_flag = 0 and tray_model_code = #{ew.trayModelCode}
+        <if test="ew.id!=null and ew.id!=''">
+            and id != #{ew.id}
+        </if>
+    </select>
+
+</mapper>

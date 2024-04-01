@@ -1,0 +1,60 @@
+package com.ruoyi.wms.check.domain;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import com.ruoyi.common.annotation.Excel;
+import com.ruoyi.common.core.domain.BaseEntity;
+
+/**
+ * 库存盘点实盘货物单对象
+ *
+ * @author ruoyi
+ * @date 2023-03-20
+ */
+@Data
+@Accessors(chain = true)
+@TableName("wms_warehouse_check_realitygoods")
+public class CheckRealitygoods extends BaseEntity{
+
+
+    /** 主键ID */
+    private String id;
+
+    /** 盘点单号 */
+    @Excel(name = "盘点单号")
+    private String checkBillCode;
+
+    /** 机件号 */
+    @Excel(name = "机件号")
+    private String partsCode;
+
+    /** 货物唯一码 */
+    @Excel(name = "货物唯一码")
+    private String onlyCode;
+
+    /** 盘点托盘编号 */
+    @Excel(name = "盘点托盘编号")
+    private String trayCode;
+
+    /** 货物编码 */
+    @Excel(name = "货物编码")
+    private String goodsCode;
+
+    /** 货物名称 */
+    @Excel(name = "货物名称")
+    private String goodsName;
+
+    /** 规格型号 */
+    @Excel(name = "规格型号")
+    private String model;
+
+    /** 计量单位 */
+    @Excel(name = "计量单位")
+    private String measureUnit;
+
+
+
+}

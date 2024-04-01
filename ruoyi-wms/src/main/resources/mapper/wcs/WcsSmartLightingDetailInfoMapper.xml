@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsSmartLightingDetailInfoMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsSmartLightingDetailInfo" id="WcsSmartLightingDetailInfoResult">
+        <result property="id" column="id"/>
+        <result property="deviceInfoId" column="device_info_id"/>
+        <result property="beginTime" column="begin_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="systemStatus" column="system_status"/>
+        <result property="switchStatus" column="switch_status"/>
+    </resultMap>
+
+    <select id="queryList" resultType="com.ruoyi.wcs.domain.vo.WcsSmartLightVo">
+        SELECT
+        t.id,
+        t.device_no,
+        t.device_name,
+        t.device_area,
+        s.id as smartLightId,
+        s.device_info_id,
+        s.begin_time,
+        s.end_time,
+        s.system_status,
+        s.switch_status
+        FROM
+        wcs_device_base_info t
+        LEFT JOIN wcs_smart_lighting_detail_info s
+        on t.id = s.device_info_id
+        <where>
+            1 = 1
+            <if test="deviceNo != null and deviceNo != ''">
+                and t.device_no like concat('%', #{deviceNo}, '%')
+            </if>
+            <if test="deviceArea != null and deviceArea != ''">
+                and t.device_area = #{deviceArea}
+            </if>
+            and t.enable_status = 0 and t.del_flag = 0 and t.device_type = '5'
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.outbound.mapper.OutbillGoodsMapper">
+
+    <resultMap type="com.ruoyi.wms.outbound.domain.OutbillGoods" id="OutbillGoodsResult">
+        <result property="id" column="id"/>
+        <result property="outBillCode" column="out_bill_code"/>
+        <result property="onlyCode" column="only_code"/>
+        <result property="locationCode" column="location_code"/>
+        <result property="partsCode" column="parts_code"/>
+        <result property="goodsCode" column="goods_code"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="model" column="model"/>
+        <result property="measureUnit" column="measure_unit"/>
+        <result property="charg" column="charg"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="trayCode" column="tray_code"/>
+        <result property="outBillNum" column="out_bill_num"/>
+        <result property="outBillStatus" column="out_bill_status"/>
+        <result property="outBillTime" column="out_bill_time"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.outbound.domain.OutbillGoods">
+        select
+        id,
+        out_bill_code,location_code,
+        only_code,
+        parts_code,
+        goods_code,
+        goods_name,
+        model,
+        measure_unit,
+        charg,
+        supplier_code,
+        supplier_name,
+        tray_code,
+        out_bill_num,
+        out_bill_status,
+        out_bill_time,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark
+        from
+        wms_outbill_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc,location_code asc
+    </select>
+    <select id="selectListByGroup" resultType="com.ruoyi.wms.outbound.domain.OutbillGoods">
+        select
+        t.out_bill_code,location_code,
+        t.goods_code,
+        t.goods_name,
+        t.model,
+        t.measure_unit,
+        t.charg,
+        t.tray_code,
+        sum(t.out_bill_num) out_bill_num,
+        sum(t.num) num,
+        t.out_bill_time
+        from (select out_bill_code,location_code,
+        goods_code,
+        goods_name,
+        model,
+        measure_unit,
+        charg,
+        tray_code,
+        out_bill_num,
+        IF(out_bill_status=2,1,0) num,
+        out_bill_time
+        from
+        wms_outbill_goods
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by create_time desc) t group by t.charg,t.tray_code,t.goods_code
+    </select>
+    <select id="listGroup" resultType="com.ruoyi.wms.outbound.domain.OutbillGoods">
+        select id,only_code,parts_code,goods_code,goods_name,model,measure_unit,out_bill_num
+        from wms_outbill_goods where del_flag='0' and out_bill_code=#{outbillGoods.outBillCode}
+    </select>
+    <select id="listByOutBillCode" resultType="com.ruoyi.wms.outbound.domain.OutbillGoods">
+        select
+            goods_code,
+            goods_name,
+            model,
+            (select dict_label from sys_dict_data where dict_type='wms_metering_unit' and dict_value=measure_unit) measure_unit,
+            sum(out_bill_num) out_bill_num
+        from
+            wms_outbill_goods where del_flag='0' and out_bill_code=#{outBillCode} group by goods_code
+    </select>
+
+    <select id="selectOutbillDetail" resultType="com.ruoyi.wms.outbound.domain.OutbillGoods">
+        SELECT distinct a.tray_code trayCode,b.area_id areaCode FROM wms_outbill_goods a
+        left join wms_warehouse_location b
+        on a.location_code = b.location_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

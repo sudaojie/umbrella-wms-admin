@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wms.basics.mapper.AreaMapper">
+
+    <resultMap type="com.ruoyi.wms.basics.domain.Area" id="AreaResult">
+        <result property="id" column="id"/>
+        <result property="areaCode" column="area_code"/>
+        <result property="areaName" column="area_name"/>
+        <result property="areaType" column="area_type"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="totalCapacity" column="total_capacity"/>
+        <result property="availableCapacity" column="available_capacity"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wms.basics.domain.Area">
+        select
+        id,
+        area_code,
+        area_name,
+        area_type,
+        (select CONCAT(warehouse_code,'-',warehouse_name)  from wms_warehouse_info
+        where del_flag = '0' and warehouse_code=warehouse_id )warehouse_id,
+        total_capacity,
+        available_capacity,
+        del_flag,
+        create_by,
+        create_time,
+        update_by,
+        update_time,
+        remark,
+        (select count(1) from wms_warehouse_location a
+        where a.area_id = area_code and a.lock_status = '0'
+        and a.tray_code is null and a.del_flag = '0' and a.enable_status = '0' and location_name not like '%移库%' ) emptyNum,
+        (select count(1) from wms_warehouse_location a
+        left join wms_warehouse_tray b on a.tray_code=b.tray_code
+        where a.area_id = area_code and a.lock_status = '0'
+        and a.tray_code is not null and a.del_flag = '0' and a.enable_status = '0' and a.location_name not like '%移库%'
+        and b.empty_status=0) emptyTrayNum
+        from
+        wms_warehouse_area
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        order by area_code
+    </select>
+    <select id="checkCode" resultType="java.lang.Integer">
+        select count(*) from wms_warehouse_area where area_code=#{object.areaCode} and  del_flag = '0'
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+<!--        <if test="object.warehouseId!=null and object.warehouseId!=''">-->
+<!--            and warehouse_id = #{object.warehouseId}-->
+<!--        </if>-->
+    </select>
+    <select id="checkName" resultType="java.lang.Integer">
+        select count(*) from wms_warehouse_area where area_name=#{object.areaName} and del_flag = '0'
+        <if test="object.id!=null and object.id!=''">
+            and id != #{object.id}
+        </if>
+<!--        <if test="object.warehouseId!=null and object.warehouseId!=''">-->
+<!--            and warehouse_id = #{object.warehouseId}-->
+<!--        </if>-->
+    </select>
+    <select id="getAreaData" resultType="com.ruoyi.wms.basics.vo.SelectedVo">
+        select area_code value,
+        CONCAT(area_code,'-',area_name) label
+        from wms_warehouse_area
+        where del_flag = '0'
+        <if test="object.warehouseId != null and object.warehouseId != ''">
+            and warehouse_id = #{object.warehouseId}
+        </if>
+        <if test="object.areaType != null and object.areaType != ''">
+            and area_type = #{object.areaType}
+        </if>
+        <if test="object.id != null and object.id != ''">
+            and area_code not in (select area_id from wms_goods_info where del_flag = '0' and enable_status = '0'
+            <if test="object.id != '1'">
+                and id!=#{object.id}
+            </if>
+            )
+        </if>
+        order by area_type desc,area_code desc
+    </select>
+    <select id="selectDataByCode" resultType="com.ruoyi.wms.basics.domain.Area">
+        select * from wms_warehouse_area where del_flag = '0' and area_code=#{areaCode}
+    </select>
+    <select id="selectDataByWarehouseCode" resultType="java.lang.Integer">
+        select count(*) from wms_warehouse_area where warehouse_id=#{warehouseCode}  and del_flag = '0'
+    </select>
+    <select id="selectAllAreaByType" resultType="com.ruoyi.wms.basics.dto.AreaDto">
+        select area_code areaCode,
+        (select count(1) from wms_warehouse_location a
+        where a.area_id = area_code and a.lock_status = '0'
+        and a.tray_code is null and a.del_flag = '0' and a.enable_status = '0'  and location_name not like '%移库%' ) emptyNum
+        from wms_warehouse_area where del_flag = '0' and  area_type=#{type}
+        <if test="areaCode!=null and areaCode!=''">
+            and area_code = #{areaCode}
+        </if>
+    </select>
+
+    <select id="findAreaData" resultType="com.ruoyi.wms.basics.domain.Area">
+        SELECT
+            a.area_code,
+            a.area_name
+        FROM
+            wms_warehouse_area a
+        WHERE
+            del_flag = 0
+            and a.area_type in
+            <foreach collection="list" item="tableId" open="(" separator="," close=")">
+                #{tableId}
+            </foreach>
+    </select>
+    <select id="selectAreaCodeByType" resultType="java.lang.String">
+        select area_code from wms_warehouse_area WHERE
+            del_flag = 0  and area_type = #{type}
+    </select>
+
+    <select id="selectMoveLocationCodeByAreaCode" resultType="java.lang.String">
+        select substring_index(substring_index(move_location_code, ',', 1), ',', -1)
+        from wms_warehouse_area where del_flag = '0' and area_code = #{areaCode} limit 1
+    </select>
+
+    <select id="selectBackUpMoveLocationCodeByAreaCode" resultType="java.lang.String">
+        select substring_index(substring_index(move_location_code, ',', 2), ',', -1)
+        from wms_warehouse_area where del_flag = '0' and area_code = #{areaCode} limit 1
+    </select>
+
+    <select id="selectBackUp2MoveLocationCodeByAreaCode" resultType="java.lang.String">
+        select substring_index(substring_index(move_location_code, ',', 3), ',', -1)
+        from wms_warehouse_area where del_flag = '0' and area_code = #{areaCode} limit 1
+    </select>
+
+</mapper>

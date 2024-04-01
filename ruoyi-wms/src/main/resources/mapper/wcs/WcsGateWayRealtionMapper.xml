@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.wcs.mapper.WcsGateWayRealtionMapper">
+
+    <resultMap type="com.ruoyi.wcs.domain.WcsGateWayRealtion" id="WcsGateWayRealtionResult">
+        <result property="id" column="id"/>
+        <result property="gateWayDeviceNo" column="gate_way_device_no"/>
+        <result property="noIpDeviceNo" column="no_ip_device_no"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="select" resultType="com.ruoyi.wcs.domain.WcsGateWayRealtion">
+        SELECT
+        a.id,
+        a.gate_way_device_no,
+        a.remark,
+        a.device_name as initDeviceName,
+        sum( CASE WHEN a.device_type = 3 THEN 1 ELSE 0 END ) AS templateureNum,
+        sum( CASE WHEN a.device_type = 4 THEN 1 ELSE 0 END ) AS smokeNum,
+        sum( CASE WHEN a.device_type = 5 THEN 1 ELSE 0 END ) AS lightNum,
+        sum( CASE WHEN a.device_type = 6 THEN 1 ELSE 0 END ) AS ammeterNum,
+        sum( CASE WHEN a.device_type = 7 THEN 1 ELSE 0 END ) AS freshNum,
+        sum( CASE WHEN a.device_type = 10 THEN 1 ELSE 0 END ) AS dehumidifierNum
+        FROM
+        (
+        SELECT
+        wgwr.id,
+        wgwr.gate_way_device_no,
+        wgwr.remark,
+        wgwr.no_ip_device_no,
+        wdbi.device_type,
+        wdb.device_name
+        FROM
+        wcs_gate_way_realtion wgwr
+        LEFT JOIN wcs_device_base_info wdbi ON wgwr.no_ip_device_no = wdbi.device_no
+        LEFT JOIN wcs_device_base_info wdb ON wgwr.gate_way_device_no = wdb.device_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        ) a
+        GROUP BY
+        a.gate_way_device_no
+    </select>
+
+</mapper>

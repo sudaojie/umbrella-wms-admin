@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: prod
+
+#项目下载时间
+downLoadTime: 2023-09-17 16:00
+
+#同级别目录下的 simsun.ttc 文件需要放在配置的文件上传地址下的/upload/formal文件夹下，不然无法生成pdf
